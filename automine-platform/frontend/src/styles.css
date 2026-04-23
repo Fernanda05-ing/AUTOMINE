@@ -1,0 +1,35 @@
+:root {
+  --coal-black: #101417;
+  --steel-gray: #2e3944;
+  --mineral-gold: #c8a75d;
+  --clean-white: #f5f7fa;
+  --industrial-blue: #1f4b77;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'Manrope', sans-serif;
+  background: radial-gradient(circle at top left, #1a2833, #0f141a 45%, #07090b);
+  color: var(--clean-white);
+}
+
+.mat-mdc-card {
+  border-radius: 16px !important;
+  background: linear-gradient(145deg, rgba(27, 36, 44, 0.92), rgba(12, 18, 24, 0.92)) !important;
+  border: 1px solid rgba(200, 167, 93, 0.25);
+}
+
+.page-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.kpi-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--mineral-gold);
+}

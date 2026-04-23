@@ -1,0 +1,43 @@
+version: '3.9'
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: automine-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: automine
+      MYSQL_USER: automine
+      MYSQL_PASSWORD: automine123
+      MYSQL_ROOT_PASSWORD: root123
+    ports:
+      - '3306:3306'
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ../database/01_schema_automine.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ../database/02_seed_automine.sql:/docker-entrypoint-initdb.d/02_seed.sql
+
+  backend:
+    build: ../backend
+    container_name: automine-backend
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/automine?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: automine
+      SPRING_DATASOURCE_PASSWORD: automine123
+      JWT_SECRET: CHANGE_THIS_FOR_PRODUCTION
+    ports:
+      - '8080:8080'
+
+  frontend:
+    build: ../frontend
+    container_name: automine-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - '4200:80'
+
+volumes:
+  mysql_data:

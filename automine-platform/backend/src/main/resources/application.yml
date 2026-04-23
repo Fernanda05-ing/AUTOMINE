@@ -1,0 +1,47 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: automine-backend
+  datasource:
+    url: jdbc:mysql://localhost:3306/automine?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: automine
+    password: automine123
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        '[format_sql]': true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui
+  api-docs:
+    path: /api-docs
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:AUTOMINE_SUPER_SECRET_KEY_CHANGE_IN_PROD_2026}
+    access-token-minutes: 60
+    refresh-token-days: 7
+  frontend-url: ${FRONTEND_URL:http://localhost:4200}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
