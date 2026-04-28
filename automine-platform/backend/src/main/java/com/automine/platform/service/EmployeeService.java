@@ -8,5 +8,5 @@ import java.util.List;
 public interface EmployeeService {
     EmployeeResponse create(EmployeeRequest request);
     List<EmployeeResponse> list();
-    void retire(Long id);
+    void retire(Integer id);
 }

@@ -1,16 +1,16 @@
 server:
-  port: 8080
+  port: 8081
 
 spring:
   application:
     name: automine-backend
   datasource:
     url: jdbc:mysql://localhost:3306/automine?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-    username: automine
-    password: automine123
+    username: root
+    password: DEATHNOTE1
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     open-in-view: false
     properties:
       hibernate:

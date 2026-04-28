@@ -9,7 +9,7 @@ import java.time.LocalDate;
 @Value
 @Builder
 public class EmployeeResponse {
-    Long id;
+    Integer id;
     String employeeCode;
     String fullName;
     String documentNumber;

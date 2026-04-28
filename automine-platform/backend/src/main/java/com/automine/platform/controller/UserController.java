@@ -32,7 +32,7 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deactivate(@PathVariable Long id) {
+    public ResponseEntity<Void> deactivate(@PathVariable Integer id) {
         userService.deactivate(id);
         return ResponseEntity.noContent().build();
     }

@@ -32,7 +32,7 @@ public class EmployeeController {
 
     @PatchMapping("/{id}/retire")
     @PreAuthorize("hasAnyRole('ADMIN','RRHH')")
-    public ResponseEntity<Void> retire(@PathVariable Long id) {
+    public ResponseEntity<Void> retire(@PathVariable Integer id) {
         employeeService.retire(id);
         return ResponseEntity.noContent().build();
     }

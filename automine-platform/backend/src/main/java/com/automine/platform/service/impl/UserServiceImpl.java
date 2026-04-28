@@ -26,49 +26,49 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse create(CreateUserRequest request) {
-        userRepository.findByUsernameAndDeletedAtIsNull(request.getUsername())
+        userRepository.findByNombre(request.getUsername())
             .ifPresent(existing -> { throw new ApiException("El usuario ya existe"); });
-        userRepository.findByEmailAndDeletedAtIsNull(request.getEmail())
+        userRepository.findByEmail(request.getEmail())
             .ifPresent(existing -> { throw new ApiException("El correo ya existe"); });
 
-        Role role = roleRepository.findByCodeAndDeletedAtIsNull(request.getRoleCode())
+        Role role = roleRepository.findByNombre(request.getRoleCode())
             .orElseThrow(() -> new ApiException("Rol no encontrado"));
 
         User user = new User();
-        user.setUsername(request.getUsername());
+        user.setNombre(request.getUsername());
         user.setEmail(request.getEmail());
-        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(role);
-        user.setStatus(UserStatus.ACTIVE);
-        user.setEmailVerified(false);
+        user.setEstado(UserStatus.ACTIVO);
+        user.setEmailVerificado(false);
 
         return toResponse(userRepository.save(user));
     }
 
     @Override
     public List<UserResponse> listActive() {
-        return userRepository.findByDeletedAtIsNull().stream()
+        return userRepository.findAll().stream()
             .map(this::toResponse)
             .toList();
     }
 
     @Override
-    public void deactivate(Long id) {
+    public void deactivate(Integer id) {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new ApiException("Usuario no encontrado"));
-        user.setStatus(UserStatus.INACTIVE);
-        user.setDeletedAt(LocalDateTime.now());
+        user.setEstado(UserStatus.INACTIVO);
+        // user.setDeletedAt(LocalDateTime.now()); // Removed
         userRepository.save(user);
     }
 
     private UserResponse toResponse(User user) {
         return UserResponse.builder()
-            .id(user.getId())
-            .username(user.getUsername())
+            .id(user.getUsuarioId())
+            .username(user.getNombre())
             .email(user.getEmail())
-            .role(user.getRole().getCode())
-            .status(user.getStatus().name())
-            .emailVerified(user.isEmailVerified())
+            .role(user.getRole().getNombre())
+            .status(user.getEstado().name())
+            .emailVerified(user.getEmailVerificado())
             .build();
     }
 }

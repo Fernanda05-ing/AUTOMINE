@@ -5,6 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface MiningProductionRepository extends JpaRepository<MiningProduction, Long> {
-    List<MiningProduction> findByDeletedAtIsNull();
+public interface MiningProductionRepository extends JpaRepository<MiningProduction, Integer> {
 }

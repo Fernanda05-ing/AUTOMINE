@@ -7,6 +7,5 @@ import java.util.List;
 import java.util.Optional;
 
 public interface LaborCertificateRepository extends JpaRepository<LaborCertificate, Long> {
-    List<LaborCertificate> findByDeletedAtIsNull();
-    Optional<LaborCertificate> findByValidationCodeAndDeletedAtIsNull(String validationCode);
+    Optional<LaborCertificate> findByCodigoValidacion(String codigoValidacion);
 }

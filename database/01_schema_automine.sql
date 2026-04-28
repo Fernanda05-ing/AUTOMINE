@@ -1,0 +1,37 @@
+CREATE DATABASE IF NOT EXISTS automine;
+
+USE automine;
+
+CREATE TABLE IF NOT EXISTS roles (
+    rol_id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+    descripcion TEXT
+);
+
+CREATE TABLE IF NOT EXISTS usuarios (
+    usuario_id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    contrasena VARCHAR(255) NOT NULL,
+    rol_id INT NOT NULL,
+    estado ENUM('ACTIVO', 'INACTIVO') DEFAULT 'ACTIVO',
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (rol_id) REFERENCES roles(rol_id)
+);
+
+CREATE TABLE IF NOT EXISTS empleados (
+    empleado_id INT AUTO_INCREMENT PRIMARY KEY,
+    cedula VARCHAR(20) NOT NULL UNIQUE,
+    nombres VARCHAR(100) NOT NULL,
+    apellidos VARCHAR(100) NOT NULL,
+    telefono VARCHAR(20),
+    direccion TEXT,
+    cargo VARCHAR(100) NOT NULL,
+    area VARCHAR(100),
+    salario DECIMAL(10,2) NOT NULL,
+    fecha_ingreso DATE NOT NULL,
+    fecha_retiro DATE,
+    estado ENUM('ACTIVO', 'RETIRADO') DEFAULT 'ACTIVO',
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);

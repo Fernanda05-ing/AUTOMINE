@@ -8,9 +8,9 @@ import java.math.BigDecimal;
 @Value
 @Builder
 public class PayrollEntryResponse {
-    Long id;
-    String periodCode;
-    Long employeeId;
+    Integer id;
+    String periodo;
+    Integer employeeId;
     String employeeName;
     BigDecimal baseSalary;
     BigDecimal overtimeAmount;

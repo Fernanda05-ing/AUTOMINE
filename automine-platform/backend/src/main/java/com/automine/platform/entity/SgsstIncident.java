@@ -1,47 +1,46 @@
 package com.automine.platform.entity;
 
-import com.automine.platform.entity.base.AuditableEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "sgsst_incidents")
-public class SgsstIncident extends AuditableEntity {
+@Table(name = "accidentes")
+public class SgsstIncident {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "accidente_id")
+    private Integer accidenteId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "employee_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "empleado_id", nullable = false)
     private Employee employee;
 
-    @Column(name = "incident_type", nullable = false, length = 30)
-    private String incidentType;
+    @Column(nullable = false)
+    private LocalDateTime fecha;
 
-    @Column(name = "report_date", nullable = false)
-    private LocalDate reportDate;
+    @Column(length = 80)
+    private String tipo;
 
-    @Column(name = "event_date", nullable = false)
-    private LocalDate eventDate;
+    @Column(length = 255)
+    private String descripcion;
 
-    @Column(name = "severity_level", nullable = false, length = 20)
-    private String severityLevel;
+    @Column(length = 20, columnDefinition = "ENUM('LEVE','MODERADO','GRAVE')")
+    private String gravedad;
 
-    @Column(nullable = false, length = 1000)
-    private String description;
+    @Column(name = "incapacidad_dias")
+    private Integer incapacidadDias = 0;
 
-    @Column(name = "disability_days", nullable = false)
-    private Integer disabilityDays = 0;
+    @Column(nullable = false, length = 20, columnDefinition = "ENUM('ABIERTO','CERRADO') DEFAULT 'ABIERTO'")
+    private String estado = "ABIERTO";
 
-    @Column(name = "risk_type", length = 100)
-    private String riskType;
-
-    @Column(nullable = false, length = 20)
-    private String status = "OPEN";
+    @PrePersist
+    protected void onCreate() {
+        fecha = LocalDateTime.now();
+    }
 }

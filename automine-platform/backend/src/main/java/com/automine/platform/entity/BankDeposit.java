@@ -1,52 +1,53 @@
 package com.automine.platform.entity;
 
-import com.automine.platform.entity.base.AuditableEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "bank_deposits")
-public class BankDeposit extends AuditableEntity {
+@Table(name = "consignaciones")
+public class BankDeposit {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "consignacion_id")
+    private Integer consignacionId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "employee_id", nullable = false)
-    private Employee employee;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "payroll_entry_id")
+    @JoinColumn(name = "nomina_id", nullable = false)
     private PayrollEntry payrollEntry;
 
-    @Column(name = "bank_name", nullable = false, length = 120)
-    private String bankName;
+    @Column(nullable = false, length = 80)
+    private String banco;
 
-    @Column(name = "account_number", nullable = false, length = 40)
-    private String accountNumber;
+    @Column(name = "numero_cuenta", length = 50)
+    private String numeroCuenta;
 
-    @Column(name = "account_type", nullable = false, length = 20)
-    private String accountType;
+    @Column(name = "tipo_cuenta", length = 20)
+    private String tipoCuenta;
 
-    @Column(name = "account_holder", nullable = false, length = 160)
-    private String accountHolder;
+    @Column(length = 120)
+    private String titular;
 
-    @Column(nullable = false, precision = 14, scale = 2)
-    private BigDecimal amount;
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal valor;
 
-    @Column(name = "receipt_url")
-    private String receiptUrl;
+    @Column(length = 100)
+    private String referencia;
 
-    @Column(name = "deposit_date", nullable = false)
-    private LocalDate depositDate;
+    @Column(name = "fecha_pago", nullable = false)
+    private LocalDateTime fechaPago;
 
-    @Column(nullable = false, length = 20)
-    private String status = "REGISTERED";
+    @Column(length = 255)
+    private String comprobante;
+
+    @PrePersist
+    protected void onCreate() {
+        fechaPago = LocalDateTime.now();
+    }
 }

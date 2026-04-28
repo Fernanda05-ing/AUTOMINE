@@ -1,6 +1,5 @@
 package com.automine.platform.entity;
 
-import com.automine.platform.entity.base.AuditableEntity;
 import com.automine.platform.entity.enums.EmployeeStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -12,51 +11,49 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Entity
-@Table(name = "employees")
-public class Employee extends AuditableEntity {
+@Table(name = "empleados")
+public class Employee {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "empleado_id")
+    private Integer empleadoId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "usuario_id")
     private User user;
 
-    @Column(name = "employee_code", nullable = false, unique = true, length = 50)
-    private String employeeCode;
+    @Column(nullable = false, unique = true, length = 20)
+    private String cedula;
 
-    @Column(name = "first_name", nullable = false, length = 120)
-    private String firstName;
+    @Column(nullable = false, length = 80)
+    private String nombres;
 
-    @Column(name = "last_name", nullable = false, length = 120)
-    private String lastName;
+    @Column(nullable = false, length = 80)
+    private String apellidos;
 
-    @Column(name = "document_type", nullable = false, length = 20)
-    private String documentType;
+    @Column(length = 20)
+    private String telefono;
 
-    @Column(name = "document_number", nullable = false, unique = true, length = 30)
-    private String documentNumber;
+    @Column(length = 150)
+    private String direccion;
 
-    @Column(nullable = false, length = 120)
-    private String position;
+    @Column(length = 80)
+    private String cargo;
 
-    @Column(name = "base_salary", nullable = false, precision = 14, scale = 2)
-    private BigDecimal baseSalary;
+    @Column(length = 80)
+    private String area;
 
-    @Column(name = "hire_date", nullable = false)
-    private LocalDate hireDate;
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal salario;
 
-    @Column(name = "termination_date")
-    private LocalDate terminationDate;
+    @Column(name = "fecha_ingreso")
+    private LocalDate fechaIngreso;
 
-    @Column(length = 30)
-    private String phone;
-
-    @Column(length = 180)
-    private String address;
+    @Column(name = "fecha_retiro")
+    private LocalDate fechaRetiro;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private EmployeeStatus status = EmployeeStatus.ACTIVE;
+    @Column(nullable = false, columnDefinition = "ENUM('ACTIVO','RETIRADO','SUSPENDIDO') DEFAULT 'ACTIVO'")
+    private EmployeeStatus estado = EmployeeStatus.ACTIVO;
 }

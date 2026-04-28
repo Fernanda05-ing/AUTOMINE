@@ -22,43 +22,44 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public EmployeeResponse create(EmployeeRequest request) {
         Employee employee = new Employee();
-        employee.setEmployeeCode(request.getEmployeeCode());
-        employee.setFirstName(request.getFirstName());
-        employee.setLastName(request.getLastName());
-        employee.setDocumentType(request.getDocumentType());
-        employee.setDocumentNumber(request.getDocumentNumber());
-        employee.setPosition(request.getPosition());
-        employee.setBaseSalary(request.getBaseSalary());
-        employee.setHireDate(request.getHireDate());
-        employee.setStatus(EmployeeStatus.ACTIVE);
+        employee.setCedula(request.getDocumentNumber());
+        employee.setNombres(request.getFirstName());
+        employee.setApellidos(request.getLastName());
+        employee.setTelefono(request.getPhone());
+        employee.setDireccion(request.getAddress());
+        employee.setCargo(request.getPosition());
+        employee.setArea(request.getArea());
+        employee.setSalario(request.getBaseSalary());
+        employee.setFechaIngreso(request.getHireDate());
+        employee.setEstado(EmployeeStatus.ACTIVO);
 
         return toResponse(employeeRepository.save(employee));
     }
 
     @Override
     public List<EmployeeResponse> list() {
-        return employeeRepository.findByDeletedAtIsNull().stream().map(this::toResponse).toList();
+        return employeeRepository.findAll().stream().map(this::toResponse).toList();
     }
 
     @Override
-    public void retire(Long id) {
-        Employee employee = employeeRepository.findByIdAndDeletedAtIsNull(id)
+    public void retire(Integer id) {
+        Employee employee = employeeRepository.findById(id)
             .orElseThrow(() -> new ApiException("Empleado no encontrado"));
-        employee.setTerminationDate(LocalDate.now());
-        employee.setStatus(EmployeeStatus.RETIRED);
+        employee.setFechaRetiro(LocalDate.now());
+        employee.setEstado(EmployeeStatus.RETIRADO);
         employeeRepository.save(employee);
     }
 
     private EmployeeResponse toResponse(Employee employee) {
         return EmployeeResponse.builder()
-            .id(employee.getId())
-            .employeeCode(employee.getEmployeeCode())
-            .fullName(employee.getFirstName() + " " + employee.getLastName())
-            .documentNumber(employee.getDocumentNumber())
-            .position(employee.getPosition())
-            .baseSalary(employee.getBaseSalary())
-            .hireDate(employee.getHireDate())
-            .status(employee.getStatus().name())
+            .id(employee.getEmpleadoId())
+            .employeeCode(employee.getCedula())
+            .fullName(employee.getNombres() + " " + employee.getApellidos())
+            .documentNumber(employee.getCedula())
+            .position(employee.getCargo())
+            .baseSalary(employee.getSalario())
+            .hireDate(employee.getFechaIngreso())
+            .status(employee.getEstado().name())
             .build();
     }
 }

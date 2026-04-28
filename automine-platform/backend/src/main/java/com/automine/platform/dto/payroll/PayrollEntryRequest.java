@@ -9,10 +9,10 @@ import java.math.BigDecimal;
 public class PayrollEntryRequest {
 
     @NotNull
-    private Long employeeId;
+    private Integer employeeId;
 
     @NotNull
-    private Long payrollPeriodId;
+    private String periodo;
 
     @NotNull
     private BigDecimal overtimeHours;

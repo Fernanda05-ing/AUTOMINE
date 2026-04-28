@@ -5,6 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface SgsstIncidentRepository extends JpaRepository<SgsstIncident, Long> {
-    List<SgsstIncident> findByDeletedAtIsNull();
+public interface SgsstIncidentRepository extends JpaRepository<SgsstIncident, Integer> {
 }

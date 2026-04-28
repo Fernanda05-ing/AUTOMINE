@@ -7,6 +7,7 @@ C:\Users\luisi\AUTOMINE\automine-platform\backend\src\main\java\com\automine\pla
 C:\Users\luisi\AUTOMINE\automine-platform\backend\src\main\java\com\automine\platform\controller\DashboardController.java
 C:\Users\luisi\AUTOMINE\automine-platform\backend\src\main\java\com\automine\platform\controller\DepositController.java
 C:\Users\luisi\AUTOMINE\automine-platform\backend\src\main\java\com\automine\platform\controller\EmployeeController.java
+C:\Users\luisi\AUTOMINE\automine-platform\backend\src\main\java\com\automine\platform\controller\HealthController.java
 C:\Users\luisi\AUTOMINE\automine-platform\backend\src\main\java\com\automine\platform\controller\InventoryController.java
 C:\Users\luisi\AUTOMINE\automine-platform\backend\src\main\java\com\automine\platform\controller\LaborCertificateController.java
 C:\Users\luisi\AUTOMINE\automine-platform\backend\src\main\java\com\automine\platform\controller\PayrollController.java
@@ -30,6 +31,8 @@ C:\Users\luisi\AUTOMINE\automine-platform\backend\src\main\java\com\automine\pla
 C:\Users\luisi\AUTOMINE\automine-platform\backend\src\main\java\com\automine\platform\entity\enums\EmployeeStatus.java
 C:\Users\luisi\AUTOMINE\automine-platform\backend\src\main\java\com\automine\platform\entity\enums\PayrollEntryStatus.java
 C:\Users\luisi\AUTOMINE\automine-platform\backend\src\main\java\com\automine\platform\entity\enums\UserStatus.java
+C:\Users\luisi\AUTOMINE\automine-platform\backend\src\main\java\com\automine\platform\entity\Expense.java
+C:\Users\luisi\AUTOMINE\automine-platform\backend\src\main\java\com\automine\platform\entity\Income.java
 C:\Users\luisi\AUTOMINE\automine-platform\backend\src\main\java\com\automine\platform\entity\InventoryMovement.java
 C:\Users\luisi\AUTOMINE\automine-platform\backend\src\main\java\com\automine\platform\entity\InventoryProduct.java
 C:\Users\luisi\AUTOMINE\automine-platform\backend\src\main\java\com\automine\platform\entity\LaborCertificate.java

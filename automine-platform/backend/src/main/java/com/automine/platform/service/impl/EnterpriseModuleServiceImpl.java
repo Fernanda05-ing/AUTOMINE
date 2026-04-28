@@ -30,7 +30,7 @@ public class EnterpriseModuleServiceImpl implements EnterpriseModuleService {
 
     @Override
     public List<BankDeposit> listDeposits() {
-        return bankDepositRepository.findByDeletedAtIsNull();
+        return bankDepositRepository.findAll();
     }
 
     @Override
@@ -40,12 +40,12 @@ public class EnterpriseModuleServiceImpl implements EnterpriseModuleService {
 
     @Override
     public List<LaborCertificate> listCertificates() {
-        return laborCertificateRepository.findByDeletedAtIsNull();
+        return laborCertificateRepository.findAll();
     }
 
     @Override
     public LaborCertificate findCertificateByValidationCode(String validationCode) {
-        return laborCertificateRepository.findByValidationCodeAndDeletedAtIsNull(validationCode)
+        return laborCertificateRepository.findByCodigoValidacion(validationCode)
             .orElseThrow(() -> new ApiException("Certificado no encontrado"));
     }
 
@@ -56,7 +56,7 @@ public class EnterpriseModuleServiceImpl implements EnterpriseModuleService {
 
     @Override
     public List<InventoryProduct> listInventoryProducts() {
-        return inventoryProductRepository.findByDeletedAtIsNull();
+        return inventoryProductRepository.findAll();
     }
 
     @Override
@@ -66,7 +66,7 @@ public class EnterpriseModuleServiceImpl implements EnterpriseModuleService {
 
     @Override
     public List<MiningProduction> listProduction() {
-        return miningProductionRepository.findByDeletedAtIsNull();
+        return miningProductionRepository.findAll();
     }
 
     @Override
@@ -76,7 +76,7 @@ public class EnterpriseModuleServiceImpl implements EnterpriseModuleService {
 
     @Override
     public List<SgsstIncident> listIncidents() {
-        return sgsstIncidentRepository.findByDeletedAtIsNull();
+        return sgsstIncidentRepository.findAll();
     }
 
     @Override
@@ -86,23 +86,23 @@ public class EnterpriseModuleServiceImpl implements EnterpriseModuleService {
 
     @Override
     public List<AccountingTransaction> listTransactions() {
-        return accountingTransactionRepository.findByDeletedAtIsNull();
+        return accountingTransactionRepository.findAll();
     }
 
     @Override
     public Map<String, Object> dashboardSummary() {
-        BigDecimal income = accountingTransactionRepository.findByDeletedAtIsNull().stream()
+        BigDecimal income = accountingTransactionRepository.findAll().stream()
             .filter(t -> "INCOME".equals(t.getTransactionType()))
             .map(AccountingTransaction::getAmount)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        BigDecimal expense = accountingTransactionRepository.findByDeletedAtIsNull().stream()
+        BigDecimal expense = accountingTransactionRepository.findAll().stream()
             .filter(t -> "EXPENSE".equals(t.getTransactionType()))
             .map(AccountingTransaction::getAmount)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        BigDecimal productionTons = miningProductionRepository.findByDeletedAtIsNull().stream()
-            .map(MiningProduction::getTonsExtracted)
+        BigDecimal productionTons = miningProductionRepository.findAll().stream()
+            .map(MiningProduction::getToneladas)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         Map<String, Object> summary = new HashMap<>();
@@ -110,8 +110,8 @@ public class EnterpriseModuleServiceImpl implements EnterpriseModuleService {
         summary.put("expense", expense);
         summary.put("balance", income.subtract(expense));
         summary.put("productionTons", productionTons);
-        summary.put("incidentsOpen", sgsstIncidentRepository.findByDeletedAtIsNull().stream().filter(i -> "OPEN".equals(i.getStatus())).count());
-        summary.put("lowStockProducts", inventoryProductRepository.findByDeletedAtIsNull().stream().filter(p -> p.getCurrentStock().compareTo(p.getMinStock()) <= 0).count());
+        summary.put("incidentsOpen", sgsstIncidentRepository.findAll().stream().filter(i -> "ABIERTO".equals(i.getEstado())).count());
+        summary.put("lowStockProducts", inventoryProductRepository.findAll().stream().filter(p -> p.getCantidad() <= p.getStockMinimo()).count());
 
         return summary;
     }

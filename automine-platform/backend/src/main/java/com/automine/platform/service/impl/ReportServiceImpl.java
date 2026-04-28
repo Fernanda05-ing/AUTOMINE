@@ -26,7 +26,7 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public byte[] generatePayrollPdf() {
-        List<PayrollEntry> entries = payrollEntryRepository.findByDeletedAtIsNull();
+        List<PayrollEntry> entries = payrollEntryRepository.findAll();
         try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
             Document document = new Document();
             PdfWriter.getInstance(document, output);
@@ -34,7 +34,7 @@ public class ReportServiceImpl implements ReportService {
             document.add(new Paragraph("Reporte de Nomina AUTOMINE"));
             document.add(new Paragraph("Total registros: " + entries.size()));
             for (PayrollEntry entry : entries) {
-                document.add(new Paragraph("Empleado ID " + entry.getEmployee().getId() + " - Neto: " + entry.getNetPay()));
+                document.add(new Paragraph("Empleado ID " + entry.getEmployee().getEmpleadoId() + " - Neto: " + entry.getNetoPagar()));
             }
             document.close();
             return output.toByteArray();
@@ -45,7 +45,7 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public byte[] generateAccountingExcel() {
-        List<AccountingTransaction> transactions = accountingTransactionRepository.findByDeletedAtIsNull();
+        List<AccountingTransaction> transactions = accountingTransactionRepository.findAll();
         try (XSSFWorkbook workbook = new XSSFWorkbook(); ByteArrayOutputStream output = new ByteArrayOutputStream()) {
             XSSFSheet sheet = workbook.createSheet("Contabilidad");
             Row header = sheet.createRow(0);

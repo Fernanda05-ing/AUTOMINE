@@ -1,6 +1,5 @@
 package com.automine.platform.entity;
 
-import com.automine.platform.entity.base.AuditableEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,29 +10,29 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Entity
-@Table(name = "mining_production")
-public class MiningProduction extends AuditableEntity {
+@Table(name = "produccion")
+public class MiningProduction {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "produccion_id")
+    private Integer produccionId;
 
-    @Column(name = "production_date", nullable = false)
-    private LocalDate productionDate;
+    @Column(nullable = false)
+    private LocalDate fecha;
 
-    @Column(name = "shift_name", nullable = false, length = 20)
-    private String shiftName;
+    @Column(length = 30)
+    private String turno;
 
-    @Column(name = "tons_extracted", nullable = false, precision = 14, scale = 2)
-    private BigDecimal tonsExtracted;
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal toneladas;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "supervisor_employee_id")
-    private Employee supervisor;
+    @Column(length = 120)
+    private String supervisor;
 
-    @Column(name = "machinery_used", length = 200)
-    private String machineryUsed;
+    @Column(length = 120)
+    private String maquinaria;
 
-    @Column(length = 500)
-    private String observations;
+    @Column(length = 255)
+    private String observaciones;
 }

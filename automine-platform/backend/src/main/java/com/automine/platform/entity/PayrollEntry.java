@@ -1,50 +1,55 @@
 package com.automine.platform.entity;
 
-import com.automine.platform.entity.base.AuditableEntity;
 import com.automine.platform.entity.enums.PayrollEntryStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "payroll_entries")
-public class PayrollEntry extends AuditableEntity {
+@Table(name = "nomina", uniqueConstraints = @UniqueConstraint(columnNames = {"empleado_id", "periodo"}))
+public class PayrollEntry {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "nomina_id")
+    private Integer nominaId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "payroll_period_id", nullable = false)
-    private PayrollPeriod payrollPeriod;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "employee_id", nullable = false)
+    @JoinColumn(name = "empleado_id", nullable = false)
     private Employee employee;
 
-    @Column(name = "base_salary", nullable = false, precision = 14, scale = 2)
-    private BigDecimal baseSalary;
+    @Column(nullable = false, length = 20)
+    private String periodo;
 
-    @Column(name = "overtime_hours", nullable = false, precision = 8, scale = 2)
-    private BigDecimal overtimeHours = BigDecimal.ZERO;
+    @Column(name = "salario_base", nullable = false, precision = 12, scale = 2)
+    private BigDecimal salarioBase;
 
-    @Column(name = "overtime_amount", nullable = false, precision = 14, scale = 2)
-    private BigDecimal overtimeAmount = BigDecimal.ZERO;
+    @Column(name = "horas_extras", precision = 12, scale = 2)
+    private BigDecimal horasExtras = BigDecimal.ZERO;
 
-    @Column(name = "bonus_amount", nullable = false, precision = 14, scale = 2)
-    private BigDecimal bonusAmount = BigDecimal.ZERO;
+    @Column(precision = 12, scale = 2)
+    private BigDecimal bonificaciones = BigDecimal.ZERO;
 
-    @Column(name = "deduction_amount", nullable = false, precision = 14, scale = 2)
-    private BigDecimal deductionAmount = BigDecimal.ZERO;
+    @Column(precision = 12, scale = 2)
+    private BigDecimal descuentos = BigDecimal.ZERO;
 
-    @Column(name = "net_pay", nullable = false, precision = 14, scale = 2)
-    private BigDecimal netPay;
+    @Column(name = "neto_pagar", nullable = false, precision = 12, scale = 2)
+    private BigDecimal netoPagar;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private PayrollEntryStatus status = PayrollEntryStatus.CALCULATED;
+    @Column(nullable = false, columnDefinition = "ENUM('GENERADA','PAGADA','ANULADA') DEFAULT 'GENERADA'")
+    private PayrollEntryStatus estado = PayrollEntryStatus.GENERADA;
+
+    @Column(name = "fecha_generacion", nullable = false)
+    private LocalDateTime fechaGeneracion;
+
+    @PrePersist
+    protected void onCreate() {
+        fechaGeneracion = LocalDateTime.now();
+    }
 }

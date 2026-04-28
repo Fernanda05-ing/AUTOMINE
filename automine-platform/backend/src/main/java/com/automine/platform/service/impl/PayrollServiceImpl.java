@@ -27,47 +27,44 @@ public class PayrollServiceImpl implements PayrollService {
 
     @Override
     public PayrollEntryResponse createEntry(PayrollEntryRequest request) {
-        Employee employee = employeeRepository.findByIdAndDeletedAtIsNull(request.getEmployeeId())
+        Employee employee = employeeRepository.findById(request.getEmployeeId())
             .orElseThrow(() -> new ApiException("Empleado no encontrado"));
-        PayrollPeriod period = payrollPeriodRepository.findById(request.getPayrollPeriodId())
-            .orElseThrow(() -> new ApiException("Periodo no encontrado"));
 
         PayrollEntry entry = new PayrollEntry();
         entry.setEmployee(employee);
-        entry.setPayrollPeriod(period);
-        entry.setBaseSalary(employee.getBaseSalary());
-        entry.setOvertimeHours(request.getOvertimeHours());
-        entry.setOvertimeAmount(request.getOvertimeAmount());
-        entry.setBonusAmount(request.getBonusAmount());
-        entry.setDeductionAmount(request.getDeductionAmount());
+        entry.setPeriodo(request.getPeriodo());
+        entry.setSalarioBase(employee.getSalario());
+        entry.setHorasExtras(request.getOvertimeHours());
+        entry.setBonificaciones(request.getBonusAmount());
+        entry.setDescuentos(request.getDeductionAmount());
 
-        BigDecimal netPay = employee.getBaseSalary()
-            .add(request.getOvertimeAmount())
-            .add(request.getBonusAmount())
-            .subtract(request.getDeductionAmount());
-        entry.setNetPay(netPay);
-        entry.setStatus(PayrollEntryStatus.CALCULATED);
+        BigDecimal netPay = employee.getSalario()
+            .add(request.getOvertimeAmount() != null ? request.getOvertimeAmount() : BigDecimal.ZERO)
+            .add(request.getBonusAmount() != null ? request.getBonusAmount() : BigDecimal.ZERO)
+            .subtract(request.getDeductionAmount() != null ? request.getDeductionAmount() : BigDecimal.ZERO);
+        entry.setNetoPagar(netPay);
+        entry.setEstado(PayrollEntryStatus.GENERADA);
 
         return toResponse(payrollEntryRepository.save(entry));
     }
 
     @Override
     public List<PayrollEntryResponse> listEntries() {
-        return payrollEntryRepository.findByDeletedAtIsNull().stream().map(this::toResponse).toList();
+        return payrollEntryRepository.findAll().stream().map(this::toResponse).toList();
     }
 
     private PayrollEntryResponse toResponse(PayrollEntry entry) {
         return PayrollEntryResponse.builder()
-            .id(entry.getId())
-            .periodCode(entry.getPayrollPeriod().getPeriodCode())
-            .employeeId(entry.getEmployee().getId())
-            .employeeName(entry.getEmployee().getFirstName() + " " + entry.getEmployee().getLastName())
-            .baseSalary(entry.getBaseSalary())
-            .overtimeAmount(entry.getOvertimeAmount())
-            .bonusAmount(entry.getBonusAmount())
-            .deductionAmount(entry.getDeductionAmount())
-            .netPay(entry.getNetPay())
-            .status(entry.getStatus().name())
+            .id(entry.getNominaId())
+            .periodo(entry.getPeriodo())
+            .employeeId(entry.getEmployee().getEmpleadoId())
+            .employeeName(entry.getEmployee().getNombres() + " " + entry.getEmployee().getApellidos())
+            .baseSalary(entry.getSalarioBase())
+            .overtimeAmount(entry.getBonificaciones()) // assuming bonificaciones is bonus
+            .bonusAmount(entry.getBonificaciones())
+            .deductionAmount(entry.getDescuentos())
+            .netPay(entry.getNetoPagar())
+            .status(entry.getEstado().name())
             .build();
     }
 }

@@ -42,36 +42,36 @@ public class AuthServiceImpl implements AuthService {
             new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
         );
 
-        User user = userRepository.findByUsernameAndDeletedAtIsNull(request.getUsername())
+        User user = userRepository.findByNombre(request.getUsername())
             .orElseThrow(() -> new ApiException("Credenciales invalidas"));
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
-        String token = jwtService.generateAccessToken(userDetails, Map.of("role", user.getRole().getCode()));
-        user.setLastLoginAt(LocalDateTime.now());
-        userRepository.save(user);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getNombre());
+        String token = jwtService.generateAccessToken(userDetails, Map.of("role", user.getRole().getNombre()));
+        // user.setLastLoginAt(LocalDateTime.now()); // Removed as not in schema
+        // userRepository.save(user); // Removed save
 
         return AuthResponse.builder()
             .accessToken(token)
             .tokenType("Bearer")
             .expiresIn(accessTokenMinutes * 60)
-            .username(user.getUsername())
-            .role(user.getRole().getCode())
+            .username(user.getNombre())
+            .role(user.getRole().getNombre())
             .build();
     }
 
     @Override
     public void forgotPassword(String email) {
-        User user = userRepository.findByEmailAndDeletedAtIsNull(email)
+        User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new ApiException("No existe un usuario con ese correo"));
 
         String token = UUID.randomUUID().toString();
-        user.setPasswordResetToken(token);
-        user.setPasswordResetExpiresAt(LocalDateTime.now().plusHours(1));
+        user.setTokenReset(token);
+        user.setExpiraToken(LocalDateTime.now().plusHours(1));
         userRepository.save(user);
 
         String link = frontendUrl + "/auth/reset-password?token=" + token;
         mailUtils.send(email, "AUTOMINE - Recuperacion de contrasena",
-            "Hola " + user.getUsername() + ",\n\nRecupera tu contrasena desde este enlace:\n" + link +
+            "Hola " + user.getNombre() + ",\n\nRecupera tu contrasena desde este enlace:\n" + link +
                 "\n\nEste enlace vence en 1 hora.");
     }
 }

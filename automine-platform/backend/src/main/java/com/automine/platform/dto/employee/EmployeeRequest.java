@@ -33,4 +33,10 @@ public class EmployeeRequest {
 
     @NotNull
     private LocalDate hireDate;
+
+    private String phone;
+
+    private String address;
+
+    private String area;
 }
