@@ -1,0 +1,39 @@
+# Alternativa a DESPLIEGUE.md: Render (https://render.com) con el Dockerfile.
+# Render no ofrece MySQL administrado: use una base MySQL externa (Aiven, Railway,
+# TiDB Cloud...) y ponga su cadena JDBC en DB_URL. El dominio propio se agrega en
+# Render > Settings > Custom Domains (Render gestiona el HTTPS). No incluye respaldos:
+# active los del proveedor de la base de datos.
+services:
+  - type: web
+    name: automine
+    runtime: docker
+    rootDir: automine-platform
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: starter
+    healthCheckPath: /AutomineApi/Health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: DB_URL
+        sync: false   # jdbc:mysql://HOST:PUERTO/automine_db?sslMode=REQUIRED&serverTimezone=America/Bogota
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: DEMO_DATA
+        value: "false"
+      - key: PUBLIC_URL
+        sync: false   # https://su-dominio
+      - key: CORS_ORIGINS
+        sync: false   # la misma URL publica
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false

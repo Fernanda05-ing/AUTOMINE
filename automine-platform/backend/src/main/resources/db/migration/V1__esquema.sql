@@ -1,0 +1,397 @@
+-- =====================================================================
+-- AUTOMINE - Esquema relacional (MySQL 8).
+-- SQL portable: tambien corre en H2 (modo MySQL) para las pruebas.
+-- =====================================================================
+
+-- ---------- Administrativo / Seguridad ----------
+CREATE TABLE roles (
+    id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+    codigo      VARCHAR(30)  NOT NULL UNIQUE,
+    nombre      VARCHAR(80)  NOT NULL,
+    descripcion VARCHAR(255)
+);
+
+CREATE TABLE parametros (
+    clave       VARCHAR(60)  PRIMARY KEY,
+    valor       VARCHAR(255) NOT NULL,
+    descripcion VARCHAR(255)
+);
+
+CREATE TABLE empleados (
+    id               BIGINT AUTO_INCREMENT PRIMARY KEY,
+    cedula           VARCHAR(20)   NOT NULL,
+    nombres          VARCHAR(80)   NOT NULL,
+    apellidos        VARCHAR(80)   NOT NULL,
+    email            VARCHAR(120),
+    telefono         VARCHAR(30),
+    direccion        VARCHAR(160),
+    fecha_nacimiento DATE,
+    cargo            VARCHAR(80)   NOT NULL,
+    area             VARCHAR(80),
+    salario          DECIMAL(15,2) NOT NULL,
+    fecha_ingreso    DATE          NOT NULL,
+    fecha_retiro     DATE,
+    tipo_contrato    VARCHAR(30)   NOT NULL,
+    banco            VARCHAR(80),
+    tipo_cuenta      VARCHAR(20),
+    numero_cuenta    VARCHAR(40),
+    eps              VARCHAR(80),
+    fondo_pension    VARCHAR(80),
+    arl              VARCHAR(80),
+    estado           VARCHAR(20)   NOT NULL,
+    created_at       DATETIME      NOT NULL,
+    updated_at       DATETIME      NOT NULL,
+    -- RN003: cedula unica por empleado
+    CONSTRAINT uk_empleados_cedula UNIQUE (cedula)
+);
+
+CREATE TABLE usuarios (
+    id             BIGINT AUTO_INCREMENT PRIMARY KEY,
+    rol_id         BIGINT       NOT NULL,
+    empleado_id    BIGINT,
+    nombre         VARCHAR(100) NOT NULL,
+    email          VARCHAR(120) NOT NULL,
+    password_hash  VARCHAR(100) NOT NULL,
+    estado         VARCHAR(20)  NOT NULL,
+    ultimo_acceso  DATETIME,
+    reset_token    VARCHAR(100),
+    reset_expira   DATETIME,
+    created_at     DATETIME     NOT NULL,
+    updated_at     DATETIME     NOT NULL,
+    CONSTRAINT uk_usuarios_email UNIQUE (email),
+    CONSTRAINT fk_usuarios_rol FOREIGN KEY (rol_id) REFERENCES roles (id),
+    CONSTRAINT fk_usuarios_empleado FOREIGN KEY (empleado_id) REFERENCES empleados (id)
+);
+
+CREATE TABLE tokens_revocados (
+    jti    VARCHAR(64) PRIMARY KEY,
+    expira DATETIME    NOT NULL
+);
+
+CREATE TABLE bitacora_accesos (
+    id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id BIGINT,
+    email      VARCHAR(120) NOT NULL,
+    evento     VARCHAR(30)  NOT NULL,
+    ip         VARCHAR(64),
+    agente     VARCHAR(255),
+    fecha      DATETIME     NOT NULL
+);
+CREATE INDEX ix_bitacora_fecha ON bitacora_accesos (fecha);
+
+CREATE TABLE auditoria (
+    id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+    usuario     VARCHAR(120) NOT NULL,
+    accion      VARCHAR(40)  NOT NULL,
+    entidad     VARCHAR(60)  NOT NULL,
+    entidad_id  VARCHAR(40),
+    detalle     VARCHAR(500),
+    fecha       DATETIME     NOT NULL
+);
+CREATE INDEX ix_auditoria_fecha ON auditoria (fecha);
+
+-- ---------- Talento humano ----------
+CREATE TABLE historial_laboral (
+    id             BIGINT AUTO_INCREMENT PRIMARY KEY,
+    empleado_id    BIGINT       NOT NULL,
+    fecha          DATE         NOT NULL,
+    tipo           VARCHAR(30)  NOT NULL,
+    descripcion    VARCHAR(500) NOT NULL,
+    registrado_por VARCHAR(120),
+    created_at     DATETIME     NOT NULL,
+    CONSTRAINT fk_historial_empleado FOREIGN KEY (empleado_id) REFERENCES empleados (id)
+);
+
+CREATE TABLE contratos (
+    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+    empleado_id  BIGINT        NOT NULL,
+    tipo         VARCHAR(30)   NOT NULL,
+    cargo        VARCHAR(80)   NOT NULL,
+    salario      DECIMAL(15,2) NOT NULL,
+    fecha_inicio DATE          NOT NULL,
+    fecha_fin    DATE,
+    estado       VARCHAR(20)   NOT NULL,
+    created_at   DATETIME      NOT NULL,
+    CONSTRAINT fk_contratos_empleado FOREIGN KEY (empleado_id) REFERENCES empleados (id)
+);
+
+CREATE TABLE documentos_empleado (
+    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+    empleado_id  BIGINT       NOT NULL,
+    nombre       VARCHAR(200) NOT NULL,
+    tipo         VARCHAR(40)  NOT NULL,
+    content_type VARCHAR(100) NOT NULL,
+    tamano       BIGINT       NOT NULL,
+    datos        LONGBLOB     NOT NULL,
+    subido_por   VARCHAR(120),
+    created_at   DATETIME     NOT NULL,
+    CONSTRAINT fk_documentos_empleado FOREIGN KEY (empleado_id) REFERENCES empleados (id)
+);
+
+-- ---------- Nomina ----------
+CREATE TABLE periodos_nomina (
+    id               BIGINT AUTO_INCREMENT PRIMARY KEY,
+    anio             INT          NOT NULL,
+    mes              INT          NOT NULL,
+    estado           VARCHAR(20)  NOT NULL,
+    aprobado_por     VARCHAR(120),
+    fecha_aprobacion DATETIME,
+    created_at       DATETIME     NOT NULL,
+    CONSTRAINT uk_periodo UNIQUE (anio, mes)
+);
+
+CREATE TABLE nominas (
+    id                       BIGINT AUTO_INCREMENT PRIMARY KEY,
+    periodo_id               BIGINT        NOT NULL,
+    empleado_id              BIGINT        NOT NULL,
+    salario_base             DECIMAL(15,2) NOT NULL,
+    dias_trabajados          INT           NOT NULL,
+    salario_devengado        DECIMAL(15,2) NOT NULL,
+    horas_extra_diurnas      DECIMAL(8,2)  NOT NULL,
+    horas_extra_nocturnas    DECIMAL(8,2)  NOT NULL,
+    horas_extra_dominicales  DECIMAL(8,2)  NOT NULL,
+    valor_horas_extra        DECIMAL(15,2) NOT NULL,
+    bonificaciones           DECIMAL(15,2) NOT NULL,
+    auxilio_transporte       DECIMAL(15,2) NOT NULL,
+    total_devengado          DECIMAL(15,2) NOT NULL,
+    salud                    DECIMAL(15,2) NOT NULL,
+    pension                  DECIMAL(15,2) NOT NULL,
+    fondo_solidaridad        DECIMAL(15,2) NOT NULL,
+    otros_descuentos         DECIMAL(15,2) NOT NULL,
+    detalle_descuentos       VARCHAR(255),
+    total_descuentos         DECIMAL(15,2) NOT NULL,
+    neto_pagar               DECIMAL(15,2) NOT NULL,
+    estado                   VARCHAR(20)   NOT NULL,
+    created_at               DATETIME      NOT NULL,
+    updated_at               DATETIME      NOT NULL,
+    -- RN001: ningun empleado puede tener doble nomina en el mismo periodo
+    CONSTRAINT uk_nomina_periodo_empleado UNIQUE (periodo_id, empleado_id),
+    CONSTRAINT fk_nomina_periodo FOREIGN KEY (periodo_id) REFERENCES periodos_nomina (id),
+    CONSTRAINT fk_nomina_empleado FOREIGN KEY (empleado_id) REFERENCES empleados (id)
+);
+
+-- ---------- Bancario ----------
+CREATE TABLE consignaciones (
+    id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
+    nomina_id          BIGINT        NOT NULL,
+    banco              VARCHAR(80)   NOT NULL,
+    cuenta             VARCHAR(40)   NOT NULL,
+    valor              DECIMAL(15,2) NOT NULL,
+    fecha_pago         DATE          NOT NULL,
+    referencia         VARCHAR(60)   NOT NULL,
+    estado             VARCHAR(20)   NOT NULL,
+    comprobante_nombre VARCHAR(200),
+    observaciones      VARCHAR(255),
+    registrado_por     VARCHAR(120),
+    aprobado_por       VARCHAR(120),
+    fecha_aprobacion   DATETIME,
+    created_at         DATETIME      NOT NULL,
+    CONSTRAINT uk_consignacion_referencia UNIQUE (referencia),
+    CONSTRAINT fk_consignacion_nomina FOREIGN KEY (nomina_id) REFERENCES nominas (id)
+);
+
+-- RF020: comprobante bancario (archivo) de cada consignacion
+CREATE TABLE comprobantes_consignacion (
+    id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+    consignacion_id BIGINT       NOT NULL,
+    nombre          VARCHAR(200) NOT NULL,
+    content_type    VARCHAR(100) NOT NULL,
+    datos           LONGBLOB     NOT NULL,
+    created_at      DATETIME     NOT NULL,
+    CONSTRAINT uk_comprobante_consignacion UNIQUE (consignacion_id),
+    CONSTRAINT fk_comprobante_consignacion FOREIGN KEY (consignacion_id) REFERENCES consignaciones (id)
+);
+
+-- ---------- Certificaciones ----------
+CREATE TABLE certificados (
+    id                BIGINT AUTO_INCREMENT PRIMARY KEY,
+    empleado_id       BIGINT       NOT NULL,
+    codigo_validacion VARCHAR(20)  NOT NULL,
+    dirigido_a        VARCHAR(150) NOT NULL,
+    incluye_salario   BOOLEAN      NOT NULL,
+    estado            VARCHAR(20)  NOT NULL,
+    emitido_por       VARCHAR(120),
+    fecha_emision     DATETIME     NOT NULL,
+    CONSTRAINT uk_certificado_codigo UNIQUE (codigo_validacion),
+    CONSTRAINT fk_certificado_empleado FOREIGN KEY (empleado_id) REFERENCES empleados (id)
+);
+
+-- ---------- Inventario ----------
+CREATE TABLE productos (
+    id             BIGINT AUTO_INCREMENT PRIMARY KEY,
+    codigo         VARCHAR(30)   NOT NULL,
+    nombre         VARCHAR(120)  NOT NULL,
+    tipo           VARCHAR(20)   NOT NULL,
+    unidad         VARCHAR(20)   NOT NULL,
+    cantidad       DECIMAL(12,2) NOT NULL,
+    stock_minimo   DECIMAL(12,2) NOT NULL,
+    costo_unitario DECIMAL(15,2) NOT NULL,
+    ubicacion      VARCHAR(80),
+    activo         BOOLEAN       NOT NULL,
+    created_at     DATETIME      NOT NULL,
+    updated_at     DATETIME      NOT NULL,
+    CONSTRAINT uk_producto_codigo UNIQUE (codigo)
+);
+
+CREATE TABLE movimientos_inventario (
+    id             BIGINT AUTO_INCREMENT PRIMARY KEY,
+    producto_id    BIGINT        NOT NULL,
+    tipo           VARCHAR(20)   NOT NULL,
+    cantidad       DECIMAL(12,2) NOT NULL,
+    saldo          DECIMAL(12,2) NOT NULL,
+    costo_unitario DECIMAL(15,2) NOT NULL,
+    motivo         VARCHAR(255)  NOT NULL,
+    responsable    VARCHAR(120),
+    fecha          DATETIME      NOT NULL,
+    CONSTRAINT fk_movimiento_producto FOREIGN KEY (producto_id) REFERENCES productos (id)
+);
+
+-- ---------- Produccion minera ----------
+CREATE TABLE frentes_trabajo (
+    id                    BIGINT AUTO_INCREMENT PRIMARY KEY,
+    nombre                VARCHAR(80)   NOT NULL,
+    ubicacion             VARCHAR(120),
+    mineral               VARCHAR(40)   NOT NULL,
+    meta_diaria_toneladas DECIMAL(12,2) NOT NULL,
+    activo                BOOLEAN       NOT NULL,
+    CONSTRAINT uk_frente_nombre UNIQUE (nombre)
+);
+
+CREATE TABLE maquinaria (
+    id                    BIGINT AUTO_INCREMENT PRIMARY KEY,
+    codigo                VARCHAR(30)   NOT NULL,
+    nombre                VARCHAR(120)  NOT NULL,
+    tipo                  VARCHAR(60)   NOT NULL,
+    marca                 VARCHAR(60),
+    modelo                VARCHAR(60),
+    serial                VARCHAR(60),
+    estado                VARCHAR(20)   NOT NULL,
+    horometro             DECIMAL(12,1) NOT NULL,
+    ultimo_mantenimiento  DATE,
+    proximo_mantenimiento DATE,
+    frente_id             BIGINT,
+    observaciones         VARCHAR(255),
+    created_at            DATETIME      NOT NULL,
+    CONSTRAINT uk_maquinaria_codigo UNIQUE (codigo),
+    CONSTRAINT fk_maquinaria_frente FOREIGN KEY (frente_id) REFERENCES frentes_trabajo (id)
+);
+
+CREATE TABLE producciones (
+    id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+    fecha           DATE          NOT NULL,
+    turno           VARCHAR(10)   NOT NULL,
+    frente_id       BIGINT        NOT NULL,
+    toneladas       DECIMAL(12,2) NOT NULL,
+    horas_operacion DECIMAL(5,2)  NOT NULL,
+    observaciones   VARCHAR(500),
+    registrado_por  VARCHAR(120),
+    created_at      DATETIME      NOT NULL,
+    CONSTRAINT uk_produccion_turno UNIQUE (fecha, turno, frente_id),
+    CONSTRAINT fk_produccion_frente FOREIGN KEY (frente_id) REFERENCES frentes_trabajo (id)
+);
+
+CREATE TABLE asignaciones_turno (
+    id            BIGINT AUTO_INCREMENT PRIMARY KEY,
+    produccion_id BIGINT      NOT NULL,
+    empleado_id   BIGINT      NOT NULL,
+    labor         VARCHAR(80) NOT NULL,
+    CONSTRAINT uk_asignacion UNIQUE (produccion_id, empleado_id),
+    CONSTRAINT fk_asignacion_produccion FOREIGN KEY (produccion_id) REFERENCES producciones (id) ON DELETE CASCADE,
+    CONSTRAINT fk_asignacion_empleado FOREIGN KEY (empleado_id) REFERENCES empleados (id)
+);
+
+-- ---------- SG-SST ----------
+CREATE TABLE eventos_sst (
+    id               BIGINT AUTO_INCREMENT PRIMARY KEY,
+    tipo             VARCHAR(20)   NOT NULL,
+    empleado_id      BIGINT,
+    fecha            DATETIME      NOT NULL,
+    lugar            VARCHAR(120)  NOT NULL,
+    descripcion      VARCHAR(1000) NOT NULL,
+    gravedad         VARCHAR(20)   NOT NULL,
+    dias_incapacidad INT           NOT NULL,
+    causas           VARCHAR(500),
+    acciones         VARCHAR(500),
+    estado           VARCHAR(20)   NOT NULL,
+    reportado_por    VARCHAR(120),
+    created_at       DATETIME      NOT NULL,
+    CONSTRAINT fk_evento_empleado FOREIGN KEY (empleado_id) REFERENCES empleados (id)
+);
+
+CREATE TABLE entregas_epp (
+    id            BIGINT AUTO_INCREMENT PRIMARY KEY,
+    empleado_id   BIGINT        NOT NULL,
+    producto_id   BIGINT,
+    elemento      VARCHAR(120)  NOT NULL,
+    cantidad      DECIMAL(10,2) NOT NULL,
+    fecha         DATE          NOT NULL,
+    observaciones VARCHAR(255),
+    entregado_por VARCHAR(120),
+    created_at    DATETIME      NOT NULL,
+    CONSTRAINT fk_epp_empleado FOREIGN KEY (empleado_id) REFERENCES empleados (id),
+    CONSTRAINT fk_epp_producto FOREIGN KEY (producto_id) REFERENCES productos (id)
+);
+
+CREATE TABLE capacitaciones (
+    id             BIGINT AUTO_INCREMENT PRIMARY KEY,
+    tema           VARCHAR(150) NOT NULL,
+    descripcion    VARCHAR(500),
+    fecha          DATETIME     NOT NULL,
+    duracion_horas DECIMAL(5,2) NOT NULL,
+    instructor     VARCHAR(100) NOT NULL,
+    lugar          VARCHAR(100),
+    estado         VARCHAR(20)  NOT NULL,
+    created_at     DATETIME     NOT NULL
+);
+
+CREATE TABLE asistentes_capacitacion (
+    id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+    capacitacion_id BIGINT  NOT NULL,
+    empleado_id     BIGINT  NOT NULL,
+    asistio         BOOLEAN NOT NULL,
+    CONSTRAINT uk_asistente UNIQUE (capacitacion_id, empleado_id),
+    CONSTRAINT fk_asistente_capacitacion FOREIGN KEY (capacitacion_id) REFERENCES capacitaciones (id) ON DELETE CASCADE,
+    CONSTRAINT fk_asistente_empleado FOREIGN KEY (empleado_id) REFERENCES empleados (id)
+);
+
+CREATE TABLE riesgos (
+    id            BIGINT AUTO_INCREMENT PRIMARY KEY,
+    proceso       VARCHAR(100) NOT NULL,
+    actividad     VARCHAR(150) NOT NULL,
+    peligro       VARCHAR(150) NOT NULL,
+    clasificacion VARCHAR(40)  NOT NULL,
+    efectos       VARCHAR(255),
+    probabilidad  INT          NOT NULL,
+    severidad     INT          NOT NULL,
+    controles     VARCHAR(500),
+    responsable   VARCHAR(100),
+    created_at    DATETIME     NOT NULL,
+    updated_at    DATETIME     NOT NULL
+);
+
+-- ---------- Contabilidad ----------
+CREATE TABLE movimientos_contables (
+    id             BIGINT AUTO_INCREMENT PRIMARY KEY,
+    tipo           VARCHAR(10)   NOT NULL,
+    fecha          DATE          NOT NULL,
+    concepto       VARCHAR(200)  NOT NULL,
+    categoria      VARCHAR(60)   NOT NULL,
+    valor          DECIMAL(15,2) NOT NULL,
+    referencia     VARCHAR(60),
+    origen         VARCHAR(20)   NOT NULL,
+    registrado_por VARCHAR(120),
+    created_at     DATETIME      NOT NULL
+);
+CREATE INDEX ix_mov_contable_fecha ON movimientos_contables (fecha);
+
+CREATE TABLE caja_menor (
+    id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+    fecha       DATE          NOT NULL,
+    tipo        VARCHAR(20)   NOT NULL,
+    concepto    VARCHAR(200)  NOT NULL,
+    valor       DECIMAL(15,2) NOT NULL,
+    saldo       DECIMAL(15,2) NOT NULL,
+    soporte     VARCHAR(60),
+    responsable VARCHAR(120),
+    created_at  DATETIME      NOT NULL
+);

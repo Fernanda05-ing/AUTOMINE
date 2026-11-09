@@ -1,0 +1,89 @@
+# AUTOMINE en un servidor: base de datos + aplicacion + HTTPS con su dominio + respaldos diarios.
+#   cp .env.example .env      (y complete los valores)
+#   docker compose up -d --build
+# Abra https://SU-DOMINIO
+services:
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: automine_db
+      MYSQL_USER: automine
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Defina DB_PASSWORD en .env}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Defina DB_ROOT_PASSWORD en .env}
+      TZ: America/Bogota
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    volumes:
+      - automine-db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 12
+
+  app:
+    build: .
+    image: automine:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "8081"
+    environment:
+      APP_ENV: ${APP_ENV:-production}
+      DB_URL: jdbc:mysql://db:3306/automine_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Bogota&characterEncoding=UTF-8
+      DB_USERNAME: automine
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?Defina JWT_SECRET en .env (32+ caracteres)}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@automine.co}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Defina ADMIN_PASSWORD en .env}
+      DEMO_DATA: ${DEMO_DATA:-false}
+      PUBLIC_URL: ${PUBLIC_URL:?Defina PUBLIC_URL en .env (ej. https://automine.com.co)}
+      CORS_ORIGINS: ${PUBLIC_URL}
+      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_FROM: ${MAIL_FROM:-}
+      MAIL_SSL: ${MAIL_SSL:-false}
+      MAIL_STARTTLS: ${MAIL_STARTTLS:-true}
+      COMPANY_NAME: ${COMPANY_NAME:-AUTOMINE S.A.S.}
+      COMPANY_NIT: ${COMPANY_NIT:-900.123.456-7}
+      COMPANY_CITY: ${COMPANY_CITY:-Medellín, Antioquia}
+
+  caddy:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:?Defina DOMAIN en .env (ej. automine.com.co)}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+  backup:
+    image: mysql:8.4
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: ["sh", "/respaldo.sh"]
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
+      BACKUP_INTERVAL_SECONDS: ${BACKUP_INTERVAL_SECONDS:-86400}
+      TZ: America/Bogota
+    volumes:
+      - ./deploy/respaldo.sh:/respaldo.sh:ro
+      - ./respaldos:/backups
+
+volumes:
+  automine-db:
+  caddy-data:
+  caddy-config:

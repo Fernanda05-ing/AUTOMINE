@@ -1,47 +1,91 @@
+# AUTOMINE API. Toda la configuracion sensible llega por variables de entorno
+# para que la misma imagen sirva en local y en el servidor.
 server:
-  port: 8081
+  port: ${PORT:8081}
+  forward-headers-strategy: framework
+  compression:
+    enabled: true
 
 spring:
   application:
-    name: automine-backend
+    name: automine-api
   datasource:
-    url: jdbc:mysql://localhost:3306/automine?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-    username: root
-    password: DEATHNOTE1
+    url: ${DB_URL:jdbc:mysql://localhost:3306/automine_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Bogota&characterEncoding=UTF-8}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}
   jpa:
     hibernate:
-      ddl-auto: update
+      # El esquema lo crea Flyway; Hibernate solo verifica que las entidades coincidan.
+      ddl-auto: validate
     open-in-view: false
     properties:
       hibernate:
-        '[format_sql]': true
+        jdbc.time_zone: America/Bogota
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  jackson:
+    time-zone: America/Bogota
+    serialization:
+      write-dates-as-timestamps: false
   mail:
-    host: smtp.gmail.com
-    port: 587
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
     username: ${MAIL_USERNAME:}
     password: ${MAIL_PASSWORD:}
     properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-
-springdoc:
-  swagger-ui:
-    path: /swagger-ui
-  api-docs:
-    path: /api-docs
-
-app:
-  jwt:
-    secret: ${JWT_SECRET:AUTOMINE_SUPER_SECRET_KEY_CHANGE_IN_PROD_2026}
-    access-token-minutes: 60
-    refresh-token-days: 7
-  frontend-url: ${FRONTEND_URL:http://localhost:4200}
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: ${MAIL_STARTTLS:true}
+      # Para el puerto 465 use MAIL_SSL=true y MAIL_STARTTLS=false
+      mail.smtp.ssl.enable: ${MAIL_SSL:false}
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 12MB
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+springdoc:
+  api-docs:
+    path: /AutomineApi/v3/api-docs
+  swagger-ui:
+    path: /AutomineApi/swagger-ui.html
+    operations-sorter: alpha
+    tags-sorter: alpha
+
+app:
+  # development | production. En production se exigen claves propias.
+  env: ${APP_ENV:development}
+  jwt:
+    # Debe tener al menos 32 caracteres. En produccion SIEMPRE por variable de entorno.
+    secret: ${JWT_SECRET:automine-clave-de-desarrollo-cambiar-en-produccion-2026}
+    expiration-minutes: ${JWT_EXPIRATION_MINUTES:480}
+  public-url: ${PUBLIC_URL:http://localhost:5173}
+  cors-origins: ${CORS_ORIGINS:http://localhost:5173,http://localhost:8081}
+  # Remitente. Vacio = la misma cuenta MAIL_USERNAME (Gmail exige que coincidan).
+  mail-from: ${MAIL_FROM:}
+  company:
+    name: ${COMPANY_NAME:AUTOMINE S.A.S.}
+    nit: ${COMPANY_NIT:900.123.456-7}
+    city: ${COMPANY_CITY:Medellin, Antioquia}
+    signer-name: ${COMPANY_SIGNER_NAME:Direccion de Talento Humano}
+    signer-title: ${COMPANY_SIGNER_TITLE:Jefe de Recursos Humanos}
+  bootstrap:
+    # Si la base no tiene usuarios se crea este administrador al arrancar.
+    admin-email: ${ADMIN_EMAIL:admin@automine.co}
+    admin-password: ${ADMIN_PASSWORD:Automine2026*}
+    # Carga empleados, nomina, inventario, etc. de ejemplo (solo si la base esta vacia).
+    # Los usuarios de demostracion usan la misma contrasena del administrador.
+    demo-data: ${DEMO_DATA:false}

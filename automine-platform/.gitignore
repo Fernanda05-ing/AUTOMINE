@@ -1,0 +1,23 @@
+# Backend
+backend/target/
+backend/src/main/resources/static/
+
+# Web
+web/node_modules/
+web/dist/
+
+# Movil
+mobile/build/
+mobile/.dart_tool/
+mobile/.flutter-plugins-dependencies
+mobile/android/local.properties
+mobile/android/.gradle/
+mobile/android/app/release/
+
+# Entorno y editores
+.env
+*.log
+.idea/
+*.iml
+.DS_Store
+respaldos/

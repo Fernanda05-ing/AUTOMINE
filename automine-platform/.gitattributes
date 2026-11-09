@@ -1,0 +1,4 @@
+# Los scripts de Linux deben tener fin de linea LF para correr en el servidor
+*.sh text eol=lf
+deploy/Caddyfile text eol=lf
+Dockerfile text eol=lf

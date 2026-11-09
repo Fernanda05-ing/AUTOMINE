@@ -1,0 +1,22 @@
+# Proxy con HTTPS automatico (Let's Encrypt) para el dominio de AUTOMINE.
+# DOMAIN viene del archivo .env (ej. automine.com.co). Para incluir www escriba en .env:
+#   DOMAIN=automine.com.co, www.automine.com.co
+# Con DOMAIN=localhost usa un certificado local, util para probar en el propio computador.
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	# Archivos de la web con cache larga (llevan huella en el nombre)
+	@assets path /assets/*
+	header @assets Cache-Control "public, max-age=31536000, immutable"
+
+	reverse_proxy app:8081
+}
