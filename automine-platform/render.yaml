@@ -33,6 +33,8 @@ services:
         sync: false   # https://su-dominio
       - key: CORS_ORIGINS
         sync: false   # la misma URL publica
+      - key: GOOGLE_CLIENT_ID
+        sync: false
       - key: MAIL_USERNAME
         sync: false
       - key: MAIL_PASSWORD

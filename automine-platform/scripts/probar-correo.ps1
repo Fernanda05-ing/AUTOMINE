@@ -15,6 +15,7 @@ Write-Host "=== Prueba de correo de AUTOMINE ===" -ForegroundColor Cyan
 $env:MAIL_USERNAME = Read-Host "Cuenta de Gmail que enviara los correos"
 $env:MAIL_PASSWORD = (Leer-Secreto "Contrasena de aplicacion de Gmail (16 letras)").Replace(" ", "")
 $env:DB_PASSWORD = Leer-Secreto "Contrasena de MySQL local (usuario root)"
+$env:GOOGLE_CLIENT_ID = Read-Host "ID de cliente de Google para iniciar sesion con Google (Enter para omitir)"
 $env:PUBLIC_URL = "http://localhost:8081"
 
 # Libera el puerto si ya hay una API corriendo
