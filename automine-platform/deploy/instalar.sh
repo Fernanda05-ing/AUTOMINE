@@ -21,7 +21,6 @@ if [ ! -f .env ]; then
     if [ -n "$GMAIL" ]; then
         printf "Contrasena de aplicacion de Gmail (16 letras, sin espacios): "; read -r CLAVE_GMAIL
     fi
-    printf "ID de cliente de Google para 'Iniciar sesion con Google' (vacio = sin Google): "; read -r GOOGLE_ID
     printf "Nombre legal de la empresa [AUTOMINE S.A.S.]: "; read -r EMPRESA
     printf "NIT de la empresa [900.123.456-7]: "; read -r NIT
     printf "Cargar datos de demostracion para presentar? (s/N): "; read -r DEMO
@@ -41,7 +40,6 @@ DB_ROOT_PASSWORD=$(aleatorio 28)
 JWT_SECRET=$(aleatorio 48)
 ADMIN_EMAIL=${ADMIN}
 ADMIN_PASSWORD=${ADMIN_CLAVE}
-GOOGLE_CLIENT_ID=${GOOGLE_ID}
 MAIL_USERNAME=${GMAIL}
 MAIL_PASSWORD=${CLAVE_GMAIL}
 COMPANY_NAME=${EMPRESA:-AUTOMINE S.A.S.}

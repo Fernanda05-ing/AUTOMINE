@@ -1410,29 +1410,6 @@ textarea {
   margin-bottom: 12px;
 }
 
-.divider-o {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 18px 0 14px;
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.divider-o::before,
-.divider-o::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-}
-
-.google-btn {
-  display: flex;
-  justify-content: center;
-  min-height: 44px;
-}
-
 .auth-mobile-brand {
   display: none;
 }

@@ -4,7 +4,6 @@ import { api, session, setUnauthorizedHandler, type Usuario } from './api';
 interface AuthState {
   user: Usuario | null;
   login: (email: string, password: string) => Promise<Usuario>;
-  loginGoogle: (credential: string) => Promise<Usuario>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
   can: (...roles: string[]) => boolean;
@@ -21,13 +20,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     const res = await api.post<{ token: string; usuario: Usuario }>('/Login', { email, password });
-    session.save(res.token, res.usuario);
-    setUser(res.usuario);
-    return res.usuario;
-  }, []);
-
-  const loginGoogle = useCallback(async (credential: string) => {
-    const res = await api.post<{ token: string; usuario: Usuario }>('/LoginGoogle', { credential });
     session.save(res.token, res.usuario);
     setUser(res.usuario);
     return res.usuario;
@@ -54,12 +46,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       user,
       login,
-      loginGoogle,
       logout,
       refresh,
       can: (...roles: string[]) => !!user && (user.rol === 'ADMIN' || roles.includes(user.rol)),
     }),
-    [user, login, loginGoogle, logout, refresh],
+    [user, login, logout, refresh],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

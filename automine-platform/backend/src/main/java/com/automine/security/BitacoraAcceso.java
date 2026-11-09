@@ -22,7 +22,6 @@ import lombok.Setter;
 public class BitacoraAcceso {
 
     public static final String LOGIN_OK = "LOGIN_OK";
-    public static final String LOGIN_GOOGLE = "LOGIN_GOOGLE";
     public static final String LOGIN_FALLIDO = "LOGIN_FALLIDO";
     public static final String LOGIN_BLOQUEADO = "LOGIN_BLOQUEADO";
     public static final String LOGOUT = "LOGOUT";

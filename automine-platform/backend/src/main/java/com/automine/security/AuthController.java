@@ -48,7 +48,6 @@ public class AuthController {
     private final BitacoraAcceso.Repo bitacora;
     private final AuditoriaRepository auditoria;
     private final ParametroService parametros;
-    private final com.automine.config.AppProperties props;
 
     @GetMapping("/Health")
     public Map<String, String> health() {
@@ -59,22 +58,6 @@ public class AuthController {
     @PostMapping("/Login")
     public LoginResponse login(@Valid @RequestBody LoginRequest req, HttpServletRequest http) {
         return auth.login(req, http);
-    }
-
-    public record GoogleLoginRequest(@jakarta.validation.constraints.NotBlank String credential) {
-    }
-
-    @Operation(summary = "Iniciar sesión con Google (ID token del botón de Google)")
-    @PostMapping("/LoginGoogle")
-    public LoginResponse loginGoogle(@Valid @RequestBody GoogleLoginRequest req, HttpServletRequest http) {
-        return auth.loginGoogle(req.credential(), http);
-    }
-
-    @Operation(summary = "Configuración pública para la pantalla de acceso")
-    @GetMapping("/PublicConfig")
-    public Map<String, Object> publicConfig() {
-        String clientId = props.google().habilitado() ? props.google().clientId() : "";
-        return Map.of("googleClientId", clientId, "empresa", props.company().name());
     }
 
     @Operation(summary = "Cerrar sesión (revoca el token)")

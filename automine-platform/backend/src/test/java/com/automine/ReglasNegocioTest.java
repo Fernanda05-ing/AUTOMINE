@@ -77,10 +77,6 @@ class ReglasNegocioTest {
                 .andExpect(status().isUnauthorized());
         mvc.perform(get("/AutomineApi/Employees")).andExpect(status().isUnauthorized());
         mvc.perform(get("/AutomineApi/Health")).andExpect(status().isOk());
-        mvc.perform(get("/AutomineApi/PublicConfig")).andExpect(status().isOk())
-                .andExpect(jsonPath("$.googleClientId").value(""));
-        mvc.perform(post("/AutomineApi/LoginGoogle").contentType(MediaType.APPLICATION_JSON)
-                .content("{\"credential\":\"x\"}")).andExpect(status().isNotFound());
     }
 
     @Test

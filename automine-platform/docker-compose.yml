@@ -40,7 +40,6 @@ services:
       DEMO_DATA: ${DEMO_DATA:-false}
       PUBLIC_URL: ${PUBLIC_URL:?Defina PUBLIC_URL en .env (ej. https://automine.com.co)}
       CORS_ORIGINS: ${PUBLIC_URL}
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
       MAIL_PORT: ${MAIL_PORT:-587}
       MAIL_USERNAME: ${MAIL_USERNAME:-}

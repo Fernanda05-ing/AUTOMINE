@@ -73,9 +73,6 @@ app:
     secret: ${JWT_SECRET:automine-clave-de-desarrollo-cambiar-en-produccion-2026}
     expiration-minutes: ${JWT_EXPIRATION_MINUTES:480}
   public-url: ${PUBLIC_URL:http://localhost:5173}
-  google:
-    # ID de cliente OAuth (tipo "Aplicacion web") de Google Cloud. Vacio = boton de Google oculto.
-    client-id: ${GOOGLE_CLIENT_ID:}
   cors-origins: ${CORS_ORIGINS:http://localhost:5173,http://localhost:8081}
   # Remitente. Vacio = la misma cuenta MAIL_USERNAME (Gmail exige que coincidan).
   mail-from: ${MAIL_FROM:}

@@ -9,7 +9,6 @@ public record AppProperties(
         String env,
         Jwt jwt,
         String publicUrl,
-        Google google,
         List<String> corsOrigins,
         String mailFrom,
         Company company,
@@ -23,13 +22,6 @@ public record AppProperties(
     /** Solo en demo (o desarrollo) se permiten datos de ejemplo con usuarios de prueba. */
     public boolean permiteDemo() {
         return !"production".equalsIgnoreCase(env);
-    }
-
-    public record Google(String clientId) {
-
-        public boolean habilitado() {
-            return clientId != null && !clientId.isBlank();
-        }
     }
 
     public record Jwt(String secret, long expirationMinutes) {

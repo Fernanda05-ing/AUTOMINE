@@ -59,29 +59,6 @@ Se recomienda una cuenta exclusiva, por ejemplo `notificaciones.automine@gmail.c
 4. Google muestra una **contraseña de 16 letras**. Cópiela (sin espacios): es la que pide el instalador.
    No es la contraseña normal de la cuenta.
 
-## Paso 4b (opcional). Iniciar sesión con Google
-
-Permite que los usuarios entren con el botón **"Iniciar sesión con Google"**. Solo pueden entrar quienes
-ya tengan usuario en AUTOMINE con ese mismo correo de Google (las cuentas las crea la empresa).
-
-1. Abra **https://console.cloud.google.com** con una cuenta de Google y cree un proyecto llamado `AUTOMINE`.
-2. Menú **APIs y servicios > Pantalla de consentimiento de OAuth** (o *Google Auth Platform > Branding*):
-   - Tipo de usuario: **Externo**.
-   - Nombre de la app: `AUTOMINE`; correo de asistencia: el suyo; logo opcional.
-   - Público (*Audience*): pulse **Publicar app** para que cualquier cuenta de Google pueda usar el botón
-     (mientras esté en "Prueba", solo entran las cuentas que agregue como usuarios de prueba).
-3. Menú **APIs y servicios > Credenciales > Crear credenciales > ID de cliente de OAuth**:
-   - Tipo de aplicación: **Aplicación web**. Nombre: `AUTOMINE web`.
-   - **Orígenes autorizados de JavaScript**: agregue `https://su-dominio`
-     (y para probar en su computador: `http://localhost:8081` y `http://localhost:5173`).
-   - No hace falta llenar "URI de redireccionamiento".
-4. Pulse **Crear** y copie el **ID de cliente** (termina en `.apps.googleusercontent.com`).
-   El instalador lo pide; también puede ponerlo después en `.env` como `GOOGLE_CLIENT_ID=...` y ejecutar
-   `docker compose up -d`.
-
-El ID de cliente no es secreto (aparece en la página de inicio de sesión). El "secreto del cliente" que
-también muestra Google **no** se necesita.
-
 ## Paso 5. Instalar AUTOMINE en el servidor
 
 Conéctese al servidor (en Windows sirve PowerShell):

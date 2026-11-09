@@ -30,7 +30,6 @@ export const fmt = {
 const ETIQUETAS: Record<string, string> = {
   SGSST: 'SG-SST',
   LOGIN_OK: 'Inicio de sesión',
-  LOGIN_GOOGLE: 'Inicio con Google',
   LOGIN_FALLIDO: 'Intento fallido',
   LOGIN_BLOQUEADO: 'Acceso bloqueado',
   LOGOUT: 'Cierre de sesión',
