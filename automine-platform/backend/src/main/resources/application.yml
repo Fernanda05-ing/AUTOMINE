@@ -101,6 +101,9 @@ app:
   # Correo por API HTTPS (Brevo) para servidores que bloquean SMTP. Vacio = SMTP (Gmail).
   mail:
     brevo-key: ${BREVO_API_KEY:}
+    # Puente por Vercel (web/api/enviar-correo.js): envia con Gmail sin cuentas adicionales
+    relay-url: ${MAIL_RELAY_URL:}
+    relay-secret: ${MAIL_RELAY_SECRET:}
   # Archivos (fotos, certificados): vacio = dentro de la base de datos.
   # Con Supabase: URL del proyecto y la llave service_role (secreta, solo en el servidor).
   storage:

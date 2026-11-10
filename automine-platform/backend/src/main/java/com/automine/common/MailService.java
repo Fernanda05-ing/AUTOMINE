@@ -51,7 +51,31 @@ public class MailService {
     }
 
     public boolean configurado() {
-        return usaBrevo() || (username != null && !username.isBlank());
+        return usaRelay() || usaBrevo() || (username != null && !username.isBlank());
+    }
+
+    /** Puente HTTPS (funcion en Vercel que envia por Gmail), para servidores que bloquean SMTP. */
+    @Value("${app.mail.relay-url:}")
+    private String relayUrl;
+
+    @Value("${app.mail.relay-secret:}")
+    private String relaySecret;
+
+    private boolean usaRelay() {
+        return relayUrl != null && !relayUrl.isBlank() && relaySecret != null && !relaySecret.isBlank();
+    }
+
+    private void enviarRelay(String to, Correo correo) throws Exception {
+        String cuerpo = json.writeValueAsString(java.util.Map.of("to", to, "subject", correo.asunto(),
+                "html", html(correo), "text", textoPlano(correo), "fromName", props.company().name()));
+        var req = java.net.http.HttpRequest.newBuilder(java.net.URI.create(relayUrl.trim()))
+                .header("x-relay-secret", relaySecret.trim()).header("Content-Type", "application/json")
+                .timeout(java.time.Duration.ofSeconds(40))
+                .POST(java.net.http.HttpRequest.BodyPublishers.ofString(cuerpo, StandardCharsets.UTF_8)).build();
+        var res = http.send(req, java.net.http.HttpResponse.BodyHandlers.ofString());
+        if (res.statusCode() >= 300) {
+            throw new IllegalStateException("El puente de correo respondió " + res.statusCode() + ": " + res.body());
+        }
     }
 
     private boolean usaBrevo() {
@@ -92,6 +116,11 @@ public class MailService {
     public void enviarAhora(String to, Correo correo) throws Exception {
         if (!configurado()) {
             log.info("[CORREO no configurado] Para: {} | {}\n{}", to, correo.asunto(), textoPlano(correo));
+            return;
+        }
+        if (usaRelay()) {
+            enviarRelay(to, correo);
+            log.info("Correo enviado a {}: {}", to, correo.asunto());
             return;
         }
         if (usaBrevo()) {

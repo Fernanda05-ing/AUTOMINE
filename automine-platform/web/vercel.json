@@ -5,7 +5,7 @@
   "outputDirectory": "dist",
   "rewrites": [
     { "source": "/AutomineApi/:path*", "destination": "https://automine-api.onrender.com/AutomineApi/:path*" },
-    { "source": "/((?!assets/|logo\\.png|login-minero\\.jpg|favicon).*)", "destination": "/index.html" }
+    { "source": "/((?!api/|assets/|logo\\.png|login-minero\\.jpg|favicon).*)", "destination": "/index.html" }
   ],
   "headers": [
     {
