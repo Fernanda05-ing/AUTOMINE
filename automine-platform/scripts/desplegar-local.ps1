@@ -21,6 +21,7 @@ $env:MAIL_USERNAME = Read-Host "Cuenta de Gmail para enviar correos (Enter = sin
 if ($env:MAIL_USERNAME) {
     $env:MAIL_PASSWORD = (Leer-Secreto "Contrasena de aplicacion de Gmail (16 letras)").Replace(" ", "")
 }
+$env:GOOGLE_CLIENT_ID = Read-Host "ID de cliente de Google para iniciar sesion con Google (Enter = sin Google)"
 
 # Direccion en la red local (para el celular)
 $ipLocal = (Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
