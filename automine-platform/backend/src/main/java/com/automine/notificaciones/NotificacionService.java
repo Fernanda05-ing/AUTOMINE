@@ -48,8 +48,8 @@ public class NotificacionService {
     // ------------------------------ Cuenta ------------------------------
 
     public void bienvenida(String email, String nombre, String passwordTemporal) {
-        mail.enviar(email, Correo.de("Bienvenido a AUTOMINE", "Hola, " + primerNombre(nombre),
-                "Ingresar a AUTOMINE", props.publicUrl() + "/login",
+        mail.enviar(email, Correo.de("Active su cuenta de AUTOMINE", "Hola, " + primerNombre(nombre),
+                "Activar mi cuenta", props.publicUrl() + "/login",
                 "Se creó su cuenta en AUTOMINE, la plataforma de gestión de la empresa.",
                 "Usuario: " + email + "\nContraseña temporal: " + passwordTemporal,
                 "Al ingresar por primera vez el sistema le pedirá crear una contraseña personal. "
@@ -62,6 +62,34 @@ public class NotificacionService {
                 "Hola, " + primerNombre(nombre) + ". Recibimos una solicitud para restablecer su contraseña de AUTOMINE.",
                 "El enlace es válido durante 30 minutos. Si usted no hizo la solicitud, ignore este mensaje: "
                         + "su contraseña actual sigue funcionando."));
+    }
+
+    /** Aviso de seguridad: si la persona no hizo el cambio, puede reaccionar. */
+    public void passwordCambiada(String email, String nombre) {
+        mail.enviar(email, Correo.de("Su contraseña de AUTOMINE fue cambiada", "Contraseña actualizada",
+                "Ingresar a AUTOMINE", props.publicUrl() + "/login",
+                "Hola, " + primerNombre(nombre) + ". La contraseña de su cuenta se cambió correctamente.",
+                "Si usted no hizo este cambio, recupere su contraseña de inmediato y avise al administrador."));
+    }
+
+    /** El administrador asigno una contrasena temporal a la cuenta. */
+    public void passwordRestablecida(String email, String nombre, String passwordTemporal) {
+        mail.enviar(email, Correo.de("Nueva contraseña temporal de AUTOMINE", "Su contraseña fue restablecida",
+                "Ingresar a AUTOMINE", props.publicUrl() + "/login",
+                "Hola, " + primerNombre(nombre) + ". El administrador le asignó una contraseña temporal.",
+                "Usuario: " + email + "
+Contraseña temporal: " + passwordTemporal,
+                "Al ingresar el sistema le pedirá crear una contraseña personal."));
+    }
+
+    /** Aviso de chat, sin el contenido del mensaje. */
+    public void mensajeNuevo(String email, String nombre, String remitente) {
+        if (!activas()) {
+            return;
+        }
+        mail.enviar(email, Correo.de("Tiene un mensaje nuevo de " + remitente, "Tiene un mensaje nuevo",
+                "Ver mensaje", props.publicUrl() + "/mensajes",
+                "Hola, " + primerNombre(nombre) + ". " + remitente + " le escribió en el chat de AUTOMINE."));
     }
 
     // ------------------------------ Negocio ------------------------------

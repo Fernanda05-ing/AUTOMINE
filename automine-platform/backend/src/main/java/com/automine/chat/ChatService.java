@@ -36,6 +36,7 @@ import lombok.RequiredArgsConstructor;
 public class ChatService {
 
     private final com.automine.push.PushService push;
+    private final com.automine.notificaciones.NotificacionService notificaciones;
     private final Mensaje.Repo mensajes;
     private final UsuarioRepository usuarios;
     private final Empleado.Repo empleados;
@@ -120,7 +121,12 @@ public class ChatService {
         m.setDestinatarioId(otro.getId());
         m.setTexto(req.texto().trim());
         m.setLeido(false);
+        // Un solo correo por tanda: solo si no tenia mensajes sin leer de esta persona
+        boolean primero = mensajes.countByRemitenteIdAndDestinatarioIdAndLeidoFalse(yo.id(), otro.getId()) == 0;
         mensajes.save(m);
+        if (primero) {
+            notificaciones.mensajeNuevo(otro.getEmail(), otro.getNombre(), yo.nombre());
+        }
         push.aUsuario(otro.getId(), yo.nombre(), m.getTexto(), "mensajes");
         return dto(m, yo.id());
     }

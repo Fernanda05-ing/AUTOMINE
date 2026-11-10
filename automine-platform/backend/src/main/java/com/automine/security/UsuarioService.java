@@ -95,6 +95,11 @@ public class UsuarioService {
             u.setPasswordHash(encoder.encode(req.password()));
             // Si el administrador restablece la contraseña de otro, esa persona debe cambiarla al entrar.
             u.setDebeCambiarPassword(!esPropio);
+            if (esPropio) {
+                notificaciones.passwordCambiada(u.getEmail(), u.getNombre());
+            } else {
+                notificaciones.passwordRestablecida(u.getEmail(), u.getNombre(), req.password());
+            }
         }
         if (esAdmin) {
             if (req.rol() != null && !req.rol().isBlank()) {
@@ -130,6 +135,7 @@ public class UsuarioService {
         u.setPasswordHash(encoder.encode(nueva));
         u.setDebeCambiarPassword(false);
         audit.registrar("CAMBIO_PASSWORD", "Usuario", u.getId(), u.getEmail());
+        notificaciones.passwordCambiada(u.getEmail(), u.getNombre());
         return UsuarioResponse.of(u);
     }
 

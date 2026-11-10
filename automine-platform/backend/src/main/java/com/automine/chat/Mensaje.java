@@ -62,6 +62,8 @@ public class Mensaje {
 
         long countByDestinatarioIdAndLeidoFalse(Long destinatarioId);
 
+        long countByRemitenteIdAndDestinatarioIdAndLeidoFalse(Long remitenteId, Long destinatarioId);
+
         @Modifying
         @Query("update Mensaje m set m.leido = true where m.destinatarioId = :yo and m.remitenteId = :otro "
                 + "and m.leido = false")

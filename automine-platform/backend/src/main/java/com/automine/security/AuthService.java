@@ -137,6 +137,7 @@ public class AuthService {
         u.setResetToken(null);
         u.setResetExpira(null);
         registrar(u.getId(), u.getEmail(), BitacoraAcceso.CAMBIO_PASSWORD, http);
+        notificaciones.passwordCambiada(u.getEmail(), u.getNombre());
     }
 
     void registrar(Long usuarioId, String email, String evento, HttpServletRequest http) {
