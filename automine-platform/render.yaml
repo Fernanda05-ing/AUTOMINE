@@ -58,6 +58,9 @@ services:
         value: autominesas@gmail.com
       - key: MAIL_PASSWORD
         sync: false   # contrasena de aplicacion de Gmail (16 letras)
+      # Render gratis bloquea SMTP: los correos salen por la API de Brevo
+      - key: BREVO_API_KEY
+        sync: false
       - key: COMPANY_NAME
         value: AUTOMINE S.A.S.
       - key: COMPANY_NIT

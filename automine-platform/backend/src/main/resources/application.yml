@@ -98,6 +98,9 @@ app:
     departamento: ${DIAN_DEPARTAMENTO:05}
     municipio: ${DIAN_MUNICIPIO:05001}
     direccion: ${COMPANY_ADDRESS:Sin dirección}
+  # Correo por API HTTPS (Brevo) para servidores que bloquean SMTP. Vacio = SMTP (Gmail).
+  mail:
+    brevo-key: ${BREVO_API_KEY:}
   # Archivos (fotos, certificados): vacio = dentro de la base de datos.
   # Con Supabase: URL del proyecto y la llave service_role (secreta, solo en el servidor).
   storage:

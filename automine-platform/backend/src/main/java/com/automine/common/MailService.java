@@ -28,9 +28,19 @@ public class MailService {
 
     private final JavaMailSender sender;
     private final AppProperties props;
+    private final com.fasterxml.jackson.databind.ObjectMapper json;
+    private final java.net.http.HttpClient http = java.net.http.HttpClient.newBuilder()
+            .connectTimeout(java.time.Duration.ofSeconds(10)).build();
 
     @Value("${spring.mail.username:}")
     private String username;
+
+    /** Llave de Brevo: envia por HTTPS, para servidores que bloquean SMTP (como Render gratis). */
+    @Value("${app.mail.brevo-key:}")
+    private String brevoKey;
+
+    @Value("${app.mail.brevo-url:https://api.brevo.com/v3/smtp/email}")
+    private String brevoUrl;
 
     /** Contenido de un correo: titulo, parrafos y un boton opcional. */
     public record Correo(String asunto, String titulo, String[] parrafos, String boton, String url) {
@@ -41,7 +51,28 @@ public class MailService {
     }
 
     public boolean configurado() {
-        return username != null && !username.isBlank();
+        return usaBrevo() || (username != null && !username.isBlank());
+    }
+
+    private boolean usaBrevo() {
+        return brevoKey != null && !brevoKey.isBlank();
+    }
+
+    private void enviarBrevo(String to, Correo correo, String from) throws Exception {
+        String cuerpo = json.writeValueAsString(java.util.Map.of(
+                "sender", java.util.Map.of("name", props.company().name(), "email", from),
+                "to", java.util.List.of(java.util.Map.of("email", to)),
+                "subject", correo.asunto(),
+                "htmlContent", html(correo),
+                "textContent", textoPlano(correo)));
+        var req = java.net.http.HttpRequest.newBuilder(java.net.URI.create(brevoUrl))
+                .header("api-key", brevoKey.trim()).header("Content-Type", "application/json")
+                .header("Accept", "application/json").timeout(java.time.Duration.ofSeconds(30))
+                .POST(java.net.http.HttpRequest.BodyPublishers.ofString(cuerpo, StandardCharsets.UTF_8)).build();
+        var res = http.send(req, java.net.http.HttpResponse.BodyHandlers.ofString());
+        if (res.statusCode() >= 300) {
+            throw new IllegalStateException("Brevo respondió " + res.statusCode() + ": " + res.body());
+        }
     }
 
     /** Envio en segundo plano: un fallo de correo nunca interrumpe la operacion del usuario. */
@@ -61,6 +92,12 @@ public class MailService {
     public void enviarAhora(String to, Correo correo) throws Exception {
         if (!configurado()) {
             log.info("[CORREO no configurado] Para: {} | {}\n{}", to, correo.asunto(), textoPlano(correo));
+            return;
+        }
+        if (usaBrevo()) {
+            String remitente = props.mailFrom() == null || props.mailFrom().isBlank() ? username : props.mailFrom();
+            enviarBrevo(to, correo, remitente);
+            log.info("Correo enviado a {}: {}", to, correo.asunto());
             return;
         }
         MimeMessage msg = sender.createMimeMessage();
