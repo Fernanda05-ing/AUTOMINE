@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../api.dart';
 import '../ui.dart';
+import 'chat.dart';
 import 'login.dart';
 import 'pagos.dart';
 import 'perfil.dart';
@@ -24,6 +27,34 @@ class InicioScreen extends StatefulWidget {
 
 class _InicioScreenState extends State<InicioScreen> {
   int _actual = 0;
+  int _noLeidos = 0;
+  Timer? _timer;
+  late final Widget _chat = ChatScreen(onNoLeidos: _setNoLeidos);
+
+  @override
+  void initState() {
+    super.initState();
+    _contarNoLeidos();
+    _timer = Timer.periodic(const Duration(seconds: 20), (_) => _contarNoLeidos());
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _setNoLeidos(int n) {
+    if (mounted && n != _noLeidos) setState(() => _noLeidos = n);
+  }
+
+  Future<void> _contarNoLeidos() async {
+    if (Api.instance.usuario == null) return;
+    try {
+      final r = await Api.instance.get('/Chat/Unread');
+      _setNoLeidos((r['noLeidos'] ?? 0) as int);
+    } catch (_) {}
+  }
 
   List<_Seccion> _secciones(Usuario u) => [
         if (u.empleadoId != null) _Seccion('Mis pagos', Icons.payments_outlined, PagosScreen(empleadoId: u.empleadoId!)),
@@ -31,6 +62,7 @@ class _InicioScreenState extends State<InicioScreen> {
           _Seccion('Certificados', Icons.workspace_premium_outlined, CertificadosScreen(empleadoId: u.empleadoId!)),
         if (u.empleadoId != null) _Seccion('Turnos', Icons.schedule, TurnosScreen(empleadoId: u.empleadoId!)),
         if (u.tiene(['SUPERVISOR', 'GERENTE'])) _Seccion('Producción', Icons.landscape_outlined, const ProduccionScreen()),
+        _Seccion('Mensajes', Icons.forum_outlined, _chat),
         _Seccion('Perfil', Icons.person_outline, const PerfilScreen()),
       ];
 
@@ -61,7 +93,14 @@ class _InicioScreenState extends State<InicioScreen> {
         selectedIndex: i,
         indicatorColor: colorDorado.withValues(alpha: 0.35),
         onDestinationSelected: (n) => setState(() => _actual = n),
-        destinations: secciones.map((s) => NavigationDestination(icon: Icon(s.icono), label: s.titulo)).toList(),
+        destinations: secciones
+            .map((s) => NavigationDestination(
+                  icon: s.pantalla == _chat && _noLeidos > 0
+                      ? Badge(label: Text('$_noLeidos'), backgroundColor: colorPrimario, child: Icon(s.icono))
+                      : Icon(s.icono),
+                  label: s.titulo,
+                ))
+            .toList(),
       ),
     );
   }

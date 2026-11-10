@@ -26,6 +26,7 @@ class Usuario {
   final String rol;
   final String rolNombre;
   final int? empleadoId;
+  String? telefono;
   bool debeCambiarPassword;
 
   Usuario.fromJson(Map<String, dynamic> j)
@@ -35,10 +36,11 @@ class Usuario {
         rol = j['rol'],
         rolNombre = j['rolNombre'],
         empleadoId = j['empleadoId'],
+        telefono = j['telefono'],
         debeCambiarPassword = j['debeCambiarPassword'] == true;
 
   Map<String, dynamic> toJson() =>
-      {'id': id, 'nombre': nombre, 'email': email, 'rol': rol, 'rolNombre': rolNombre, 'empleadoId': empleadoId, 'debeCambiarPassword': debeCambiarPassword};
+      {'id': id, 'nombre': nombre, 'email': email, 'rol': rol, 'rolNombre': rolNombre, 'empleadoId': empleadoId, 'telefono': telefono, 'debeCambiarPassword': debeCambiarPassword};
 
   bool tiene(List<String> roles) => rol == 'ADMIN' || roles.contains(rol);
 }

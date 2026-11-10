@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../api.dart';
 import '../ui.dart';
+import 'chat.dart' show celular10;
 
 /// Servicios SeeProfile / EditProfile: datos del usuario y cambio de contrasena.
 class PerfilScreen extends StatefulWidget {
@@ -14,7 +15,36 @@ class PerfilScreen extends StatefulWidget {
 class _PerfilScreenState extends State<PerfilScreen> {
   final _actual = TextEditingController();
   final _nueva = TextEditingController();
+  final _celular = TextEditingController(text: Api.instance.usuario?.telefono ?? '');
   bool _guardando = false;
+  bool _guardandoCelular = false;
+
+  @override
+  void dispose() {
+    _actual.dispose();
+    _nueva.dispose();
+    _celular.dispose();
+    super.dispose();
+  }
+
+  Future<void> _guardarCelular() async {
+    final u = Api.instance.usuario!;
+    final t = _celular.text.trim();
+    if (t.isNotEmpty && celular10(t) == null) {
+      avisar(context, 'Escriba un celular colombiano de 10 dígitos, por ejemplo 300 123 4567', error: true);
+      return;
+    }
+    setState(() => _guardandoCelular = true);
+    try {
+      final r = await Api.instance.put('/EditUser', {'usuarioId': u.id, 'nombre': u.nombre, 'email': u.email, 'telefono': t});
+      u.telefono = r is Map ? r['telefono'] : t;
+      if (mounted) avisar(context, 'Celular actualizado');
+    } catch (e) {
+      if (mounted) avisar(context, '$e', error: true);
+    } finally {
+      if (mounted) setState(() => _guardandoCelular = false);
+    }
+  }
 
   Future<void> _cambiar() async {
     final u = Api.instance.usuario!;
@@ -55,6 +85,23 @@ class _PerfilScreenState extends State<PerfilScreen> {
         ]),
       ),
       const SizedBox(height: 16),
+      Text('Celular de contacto (WhatsApp)', style: Theme.of(context).textTheme.titleMedium),
+      const SizedBox(height: 4),
+      const Text('Se muestra a su supervisor y al personal para contactarlo en casos urgentes.',
+          style: TextStyle(fontSize: 12, color: Colors.black54)),
+      const SizedBox(height: 8),
+      Row(children: [
+        Expanded(
+          child: TextField(
+            controller: _celular,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(labelText: 'Celular', hintText: '300 123 4567', prefixIcon: Icon(Icons.phone_android)),
+          ),
+        ),
+        const SizedBox(width: 8),
+        FilledButton(onPressed: _guardandoCelular ? null : _guardarCelular, child: const Text('Guardar')),
+      ]),
+      const SizedBox(height: 24),
       Text('Cambiar contraseña', style: Theme.of(context).textTheme.titleMedium),
       const SizedBox(height: 8),
       TextField(controller: _actual, obscureText: true, decoration: const InputDecoration(labelText: 'Contraseña actual')),
