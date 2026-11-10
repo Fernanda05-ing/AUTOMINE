@@ -33,6 +33,7 @@ public class Usuario {
     private Rol rol;
 
     private Long empleadoId;
+    private String telefono;
     private String nombre;
     private String email;
     private String passwordHash;

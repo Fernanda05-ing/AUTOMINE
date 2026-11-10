@@ -68,7 +68,7 @@ function Kardex({ producto, onClose }: { producto: Producto; onClose: () => void
           { key: 'c', label: 'Cantidad', num: true, render: (m) => fmt.num(m.cantidad) },
           { key: 's', label: 'Saldo', num: true, render: (m) => <strong>{fmt.num(m.saldo)}</strong> },
           { key: 'cu', label: 'Costo unit.', num: true, render: (m) => fmt.money(m.costoUnitario) },
-          { key: 'm', label: 'Motivo', render: (m) => m.motivo },
+          { key: 'm', label: 'Motivo', clamp: true, render: (m) => m.motivo },
           { key: 'r', label: 'Responsable', render: (m) => m.responsable },
         ]}
       />
@@ -159,13 +159,14 @@ export default function Inventario() {
       {tab === 'movimientos' && (
         <DataTable<Movimiento>
           rows={movimientos.data}
+          search={(m) => `${m.productoCodigo} ${m.producto} ${m.tipo} ${m.motivo} ${m.responsable}`}
           columns={[
             { key: 'f', label: 'Fecha', render: (m) => fmt.dateTime(m.fecha) },
             { key: 'p', label: 'Producto', render: (m) => `${m.productoCodigo} · ${m.producto}` },
             { key: 't', label: 'Tipo', render: (m) => <Badge value={m.tipo} tone={m.tipo === 'ENTRADA' ? 'ok' : m.tipo === 'SALIDA' ? 'danger' : 'info'} /> },
             { key: 'c', label: 'Cantidad', num: true, render: (m) => fmt.num(m.cantidad) },
             { key: 's', label: 'Saldo', num: true, render: (m) => fmt.num(m.saldo) },
-            { key: 'm', label: 'Motivo', render: (m) => m.motivo },
+            { key: 'm', label: 'Motivo', clamp: true, render: (m) => m.motivo },
             { key: 'r', label: 'Responsable', render: (m) => m.responsable },
           ]}
         />
@@ -173,6 +174,7 @@ export default function Inventario() {
       {tab === 'maquinaria' && (
         <DataTable<Maquina>
           rows={maquinas.data}
+          search={(m) => `${m.codigo} ${m.nombre} ${m.tipo} ${m.estado}`}
           columns={[
             { key: 'codigo', label: 'Código' },
             { key: 'n', label: 'Máquina', render: (m) => <><strong>{m.nombre}</strong><div className="muted">{[m.marca, m.modelo, m.serial].filter(Boolean).join(' · ')}</div></> },

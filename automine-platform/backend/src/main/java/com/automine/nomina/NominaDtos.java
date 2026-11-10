@@ -50,7 +50,7 @@ public final class NominaDtos {
             BigDecimal horasExtraDominicales, BigDecimal valorHorasExtra, BigDecimal bonificaciones,
             BigDecimal auxilioTransporte, BigDecimal totalDevengado, BigDecimal salud, BigDecimal pension,
             BigDecimal fondoSolidaridad, BigDecimal otrosDescuentos, String detalleDescuentos,
-            BigDecimal totalDescuentos, BigDecimal netoPagar, String estado, LocalDateTime createdAt) {
+            BigDecimal totalDescuentos, BigDecimal netoPagar, String estado, LocalDateTime createdAt, String telefono) {
 
         public static NominaResponse of(Nomina n) {
             var p = n.getPeriodo();
@@ -61,7 +61,7 @@ public final class NominaDtos {
                     n.getHorasExtraDominicales(), n.getValorHorasExtra(), n.getBonificaciones(),
                     n.getAuxilioTransporte(), n.getTotalDevengado(), n.getSalud(), n.getPension(),
                     n.getFondoSolidaridad(), n.getOtrosDescuentos(), n.getDetalleDescuentos(),
-                    n.getTotalDescuentos(), n.getNetoPagar(), n.getEstado(), n.getCreatedAt());
+                    n.getTotalDescuentos(), n.getNetoPagar(), n.getEstado(), n.getCreatedAt(), e.getTelefono());
         }
     }
 

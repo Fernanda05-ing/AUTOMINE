@@ -57,6 +57,8 @@ export default function Consignaciones() {
       </div>
       <DataTable<Consignacion>
         rows={lista.data}
+        search={(c) => `${c.empleado} ${c.cedula} ${c.referencia} ${c.banco}`}
+        searchPlaceholder="Buscar por empleado, cédula, referencia o banco"
         columns={[
           { key: 'f', label: 'Fecha', render: (c) => fmt.date(c.fechaPago) },
           { key: 'e', label: 'Empleado', render: (c) => <><strong>{c.empleado}</strong><div className="muted">{c.cedula}</div></> },

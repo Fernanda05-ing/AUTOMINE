@@ -41,6 +41,7 @@ public class UsuarioService {
         u.setPasswordHash(encoder.encode(req.password()));
         u.setRol(rol);
         u.setEmpleadoId(req.empleadoId());
+        u.setTelefono(com.automine.empleados.EmpleadoService.celular(req.telefono()));
         u.setEstado(Usuario.ACTIVO);
         // La contraseña la eligió el administrador: el usuario debe cambiarla al entrar.
         u.setDebeCambiarPassword(true);
@@ -83,6 +84,9 @@ public class UsuarioService {
         }
         u.setNombre(req.nombre().trim());
         u.setEmail(email);
+        if (req.telefono() != null) {
+            u.setTelefono(com.automine.empleados.EmpleadoService.celular(req.telefono()));
+        }
         if (req.password() != null && !req.password().isBlank()) {
             if (esPropio && (req.passwordActual() == null
                     || !encoder.matches(req.passwordActual(), u.getPasswordHash()))) {

@@ -81,9 +81,10 @@ export default function Contabilidad() {
   const tablaMovs = (rows: Movimiento[] | null) => (
     <DataTable<Movimiento>
       rows={rows}
+      search={(m) => `${m.concepto} ${m.categoria} ${m.referencia ?? ''} ${m.origen}`}
       columns={[
         { key: 'f', label: 'Fecha', render: (m) => fmt.date(m.fecha) },
-        { key: 'c', label: 'Concepto', render: (m) => m.concepto },
+        { key: 'c', label: 'Concepto', clamp: true, render: (m) => m.concepto },
         { key: 'ca', label: 'Categoría', render: (m) => m.categoria },
         { key: 'r', label: 'Referencia', render: (m) => m.referencia },
         { key: 'o', label: 'Origen', render: (m) => <Badge value={m.origen} tone={m.origen === 'MANUAL' ? '' : 'info'} /> },

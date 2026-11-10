@@ -38,7 +38,8 @@ public final class ConsignacionDtos {
     public record ConsignacionResponse(Long id, Long nominaId, Long empleadoId, String cedula, String empleado,
             int anio, int mes, BigDecimal netoNomina, String banco, String cuenta, BigDecimal valor,
             LocalDate fechaPago, String referencia, String estado, boolean tieneComprobante, String comprobanteNombre,
-            String observaciones, String registradoPor, String aprobadoPor, LocalDateTime fechaAprobacion) {
+            String observaciones, String registradoPor, String aprobadoPor, LocalDateTime fechaAprobacion,
+            String telefono) {
 
         public static ConsignacionResponse of(Consignacion c) {
             var n = c.getNomina();
@@ -48,7 +49,7 @@ public final class ConsignacionDtos {
                     p.getAnio(), p.getMes(), n.getNetoPagar(), c.getBanco(), enmascarar(c.getCuenta()), c.getValor(),
                     c.getFechaPago(), c.getReferencia(), c.getEstado(), c.getComprobanteNombre() != null,
                     c.getComprobanteNombre(), c.getObservaciones(), c.getRegistradoPor(), c.getAprobadoPor(),
-                    c.getFechaAprobacion());
+                    c.getFechaAprobacion(), e.getTelefono());
         }
 
         /** Solo se muestran los ultimos 4 digitos de la cuenta. */

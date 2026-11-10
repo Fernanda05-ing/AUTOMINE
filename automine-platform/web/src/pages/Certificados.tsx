@@ -23,6 +23,8 @@ export default function Certificados() {
       </PageHeader>
       <DataTable<Certificado>
         rows={lista.data}
+        search={(c) => `${c.empleado} ${c.cedula} ${c.codigoValidacion} ${c.dirigidoA}`}
+        searchPlaceholder="Buscar por empleado, cédula o código"
         columns={[
           { key: 'f', label: 'Emitido', render: (c) => fmt.dateTime(c.fechaEmision) },
           { key: 'e', label: 'Empleado', render: (c) => <><strong>{c.empleado}</strong><div className="muted">{c.cedula}</div></> },

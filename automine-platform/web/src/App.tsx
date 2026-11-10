@@ -10,6 +10,7 @@ import CambiarPassword from './pages/CambiarPassword';
 
 const Inicio = lazy(() => import('./pages/Inicio'));
 const Perfil = lazy(() => import('./pages/Perfil'));
+const Chat = lazy(() => import('./pages/Chat'));
 const MiPortal = lazy(() => import('./pages/MiPortal'));
 const Empleados = lazy(() => import('./pages/Empleados'));
 const Certificados = lazy(() => import('./pages/Certificados'));
@@ -46,6 +47,7 @@ export default function App() {
       <Route path="/" element={!user ? <Navigate to="/login" replace /> : user.debeCambiarPassword ? <Navigate to="/cambiar-password" replace /> : <Layout />}>
         {p('/', <Inicio />)}
         {p('/perfil', <Perfil />)}
+        {p('/mensajes', <Chat />)}
         {p('/mi-portal', <MiPortal />)}
         {p('/empleados', <Empleados />)}
         {p('/certificados', <Certificados />)}

@@ -15,6 +15,7 @@ export interface Usuario {
   ultimoAcceso?: string;
   createdAt?: string;
   debeCambiarPassword?: boolean;
+  telefono?: string | null;
 }
 
 export class ApiError extends Error {

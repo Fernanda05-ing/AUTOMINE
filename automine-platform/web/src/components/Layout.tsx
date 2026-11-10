@@ -1,6 +1,7 @@
 import { CalendarDays, ChevronRight, LogOut, Menu, Moon, Sun } from 'lucide-react';
 import { aplicarTema, temaGuardado, type Tema } from '../theme';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { api } from '../api';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth';
 import { allowed, MENU } from '../menu';
@@ -23,6 +24,15 @@ export default function Layout() {
   const [open, setOpen] = useState(false);
   const [tema, setTema] = useState<Tema>(temaGuardado);
   const location = useLocation();
+  const [noLeidos, setNoLeidos] = useState(0);
+  useEffect(() => {
+    if (!user || user.debeCambiarPassword) return;
+    const consultar = () =>
+      api.get<{ noLeidos: number }>('/Chat/Unread').then((r) => setNoLeidos(r.noLeidos)).catch(() => {});
+    consultar();
+    const t = setInterval(consultar, 20000);
+    return () => clearInterval(t);
+  }, [user, location.pathname]);
   if (!user) return null;
   const items = MENU.filter((m) => allowed(m, user.rol) && !(m.path === '/mi-portal' && !user.empleadoId));
   const sections = [...new Set(items.map((i) => i.section))];
@@ -46,6 +56,7 @@ export default function Layout() {
                   <NavLink key={i.path} to={i.path} end={i.path === '/'} onClick={() => setOpen(false)}>
                     <i.icon aria-hidden />
                     {i.label}
+                    {i.path === '/mensajes' && noLeidos > 0 && <span className="nav-badge">{noLeidos > 99 ? '99+' : noLeidos}</span>}
                   </NavLink>
                 ))}
             </div>

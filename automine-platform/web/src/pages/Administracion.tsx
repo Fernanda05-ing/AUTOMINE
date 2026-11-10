@@ -65,7 +65,7 @@ export default function Administracion() {
   const parametros = useLoad(() => api.get<Parametro[]>('/Settings'));
   const [form, setForm] = useState<{ u?: Usuario } | null>(null);
   const [param, setParam] = useState<Parametro | null>(null);
-  const uf = useForm({ nombre: '', email: '', password: '', rol: 'EMPLEADO', empleadoId: '', estado: 'ACTIVO' });
+  const uf = useForm({ nombre: '', email: '', password: '', rol: 'EMPLEADO', empleadoId: '', estado: 'ACTIVO', telefono: '' });
   const pf = useForm({ valor: '' });
 
   return (
@@ -81,6 +81,7 @@ export default function Administracion() {
       {tab === 'usuarios' && (
         <DataTable<Usuario>
           rows={usuarios.data}
+          search={(u) => `${u.nombre} ${u.email} ${u.rolNombre} ${u.estado}`}
           columns={[
             { key: 'nombre', label: 'Nombre' },
             { key: 'email', label: 'Correo' },
@@ -93,7 +94,7 @@ export default function Administracion() {
               label: '',
               render: (u) => (
                 <div className="actions">
-                  <button className="btn small" onClick={() => { uf.setValues({ nombre: u.nombre, email: u.email, password: '', rol: u.rol, empleadoId: u.empleadoId ? String(u.empleadoId) : '', estado: u.estado }); setForm({ u }); }}>Editar</button>
+                  <button className="btn small" onClick={() => { uf.setValues({ nombre: u.nombre, email: u.email, password: '', rol: u.rol, empleadoId: u.empleadoId ? String(u.empleadoId) : '', estado: u.estado, telefono: u.telefono ?? '' }); setForm({ u }); }}>Editar</button>
                   {u.id !== user?.id && (
                     <ActionButton action={() => api.put(`/Users/${u.id}/Status`, { estado: u.estado === 'ACTIVO' ? 'INACTIVO' : 'ACTIVO' })} success="Estado actualizado" onDone={usuarios.reload}>
                       {u.estado === 'ACTIVO' ? 'Inactivar' : 'Activar'}
@@ -152,9 +153,9 @@ export default function Administracion() {
           onSubmit={async () => {
             const v = uf.values;
             if (form.u) {
-              await api.put('/EditUser', { usuarioId: form.u.id, nombre: v.nombre, email: v.email, password: v.password || null, rol: v.rol, empleadoId: v.empleadoId ? Number(v.empleadoId) : null, estado: v.estado });
+              await api.put('/EditUser', { usuarioId: form.u.id, nombre: v.nombre, email: v.email, password: v.password || null, rol: v.rol, empleadoId: v.empleadoId ? Number(v.empleadoId) : null, estado: v.estado, telefono: v.telefono });
             } else {
-              await api.post('/CreateUser', { nombre: v.nombre, email: v.email, password: v.password, rol: v.rol, empleadoId: v.empleadoId ? Number(v.empleadoId) : null });
+              await api.post('/CreateUser', { nombre: v.nombre, email: v.email, password: v.password, rol: v.rol, empleadoId: v.empleadoId ? Number(v.empleadoId) : null, telefono: v.telefono });
             }
             toast.ok('Usuario guardado');
             setForm(null);
@@ -168,6 +169,7 @@ export default function Administracion() {
               <Field label={form.u ? 'Nueva contraseña (opcional)' : 'Contraseña *'} error={err.password}>
                 <input type="password" required={!form.u} {...uf.bind('password')} placeholder="8+ caracteres, letras y números" autoComplete="new-password" />
               </Field>
+              <Field label="Celular (WhatsApp)" error={err.telefono}><input inputMode="tel" placeholder="300 123 4567" {...uf.bind('telefono')} /></Field>
               <Field label="Rol *">
                 <select {...uf.bind('rol')}>{roles.data?.map((r) => <option key={r.codigo} value={r.codigo}>{r.nombre}</option>)}</select>
               </Field>

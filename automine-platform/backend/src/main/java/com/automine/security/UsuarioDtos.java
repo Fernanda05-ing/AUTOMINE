@@ -39,7 +39,8 @@ public final class UsuarioDtos {
             @NotBlank @Email @Size(max = 120) String email,
             @NotBlank @Pattern(regexp = PASSWORD_REGEX, message = PASSWORD_MSG) String password,
             @NotBlank String rol,
-            Long empleadoId) {
+            Long empleadoId,
+            @Pattern(regexp = "^$|^[+]?(57)?[ -]?3[0-9]{2}[ -]?[0-9]{3}[ -]?[0-9]{4}$", message = "Ingrese un celular colombiano de 10 dígitos (ej. 300 123 4567)") String telefono) {
     }
 
     /** Servicio EditProfile: el usuario edita su perfil; el administrador puede editar a cualquiera. */
@@ -51,7 +52,8 @@ public final class UsuarioDtos {
             String passwordActual,
             String rol,
             Long empleadoId,
-            String estado) {
+            String estado,
+            @Pattern(regexp = "^$|^[+]?(57)?[ -]?3[0-9]{2}[ -]?[0-9]{3}[ -]?[0-9]{4}$", message = "Ingrese un celular colombiano de 10 dígitos (ej. 300 123 4567)") String telefono) {
     }
 
     public record EstadoRequest(@NotBlank @Pattern(regexp = "ACTIVO|INACTIVO") String estado) {
@@ -59,12 +61,12 @@ public final class UsuarioDtos {
 
     public record UsuarioResponse(Long id, String nombre, String email, String rol, String rolNombre,
             Long empleadoId, String estado, LocalDateTime ultimoAcceso, LocalDateTime createdAt,
-            boolean debeCambiarPassword) {
+            boolean debeCambiarPassword, String telefono) {
 
         public static UsuarioResponse of(Usuario u) {
             return new UsuarioResponse(u.getId(), u.getNombre(), u.getEmail(), u.getRol().getCodigo(),
                     u.getRol().getNombre(), u.getEmpleadoId(), u.getEstado(), u.getUltimoAcceso(), u.getCreatedAt(),
-                    Boolean.TRUE.equals(u.getDebeCambiarPassword()));
+                    Boolean.TRUE.equals(u.getDebeCambiarPassword()), u.getTelefono());
         }
     }
 

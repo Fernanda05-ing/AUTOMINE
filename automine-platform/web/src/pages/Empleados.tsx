@@ -17,6 +17,7 @@ import {
   useToast,
 } from '../components/ui';
 import { fmt, today } from '../format';
+import WhatsApp, { formatoCelular } from '../components/WhatsApp';
 import type { Empleado } from '../types';
 
 const CONTRATOS = ['INDEFINIDO', 'FIJO', 'OBRA_LABOR', 'APRENDIZAJE', 'PRESTACION_SERVICIOS'];
@@ -81,7 +82,7 @@ function EmpleadoForm({ empleado, onClose, onSaved }: { empleado?: Empleado; onC
           </Field>
           <Field label="Fecha de ingreso *" error={err.fechaIngreso}><input type="date" required {...f.bind('fechaIngreso')} /></Field>
           <Field label="Fecha de nacimiento" error={err.fechaNacimiento}><input type="date" {...f.bind('fechaNacimiento')} /></Field>
-          <Field label="Teléfono"><input {...f.bind('telefono')} /></Field>
+          <Field label="Celular (WhatsApp)" error={err.telefono}><input inputMode="tel" placeholder="300 123 4567" {...f.bind('telefono')} /></Field>
           <Field label="Dirección"><input {...f.bind('direccion')} /></Field>
           <Field label="Banco"><input {...f.bind('banco')} /></Field>
           <Field label="Tipo de cuenta">
@@ -141,7 +142,7 @@ function Detalle({ empleado, onClose, onChanged }: { empleado: Empleado; onClose
       {tab === 'datos' && (
         <dl className="kv">
           <dt>Correo</dt><dd>{e.email}</dd>
-          <dt>Teléfono</dt><dd>{e.telefono}</dd>
+          <dt>Celular</dt><dd className="actions">{formatoCelular(e.telefono) || '—'} <WhatsApp telefono={e.telefono} mensaje={`Hola ${e.nombres}, te escribimos de AUTOMINE.`} texto="Escribir" /></dd>
           <dt>Dirección</dt><dd>{e.direccion}</dd>
           <dt>Nacimiento</dt><dd>{fmt.date(e.fechaNacimiento)}</dd>
           <dt>Área</dt><dd>{e.area}</dd>
@@ -159,10 +160,11 @@ function Detalle({ empleado, onClose, onChanged }: { empleado: Empleado; onClose
           {editable && <div className="actions mb"><button className="btn small" onClick={() => setModal('novedad')}>Registrar novedad</button></div>}
           <DataTable<Historial>
             rows={historial.data}
+            search={(h) => `${h.tipo} ${h.descripcion}`}
             columns={[
               { key: 'f', label: 'Fecha', render: (h) => fmt.date(h.fecha) },
               { key: 't', label: 'Tipo', render: (h) => <Badge value={h.tipo} tone="info" /> },
-              { key: 'd', label: 'Descripción', render: (h) => h.descripcion },
+              { key: 'd', label: 'Descripción', clamp: true, render: (h) => h.descripcion },
               { key: 'r', label: 'Registrado por', render: (h) => h.registradoPor },
             ]}
           />
@@ -321,6 +323,7 @@ export default function Empleados() {
           { key: 'n', label: 'Nombre', render: (e) => <button className="btn link" onClick={() => setDetalle(e)}>{e.nombreCompleto}</button> },
           { key: 'cargo', label: 'Cargo' },
           { key: 'area', label: 'Área' },
+          { key: 'cel', label: 'Celular', render: (e) => (e.telefono ? <span className="actions">{formatoCelular(e.telefono)} <WhatsApp soloIcono telefono={e.telefono} mensaje={`Hola ${e.nombres}, te escribimos de AUTOMINE.`} /></span> : '—') },
           { key: 'i', label: 'Ingreso', render: (e) => fmt.date(e.fechaIngreso) },
           { key: 's', label: 'Salario', num: true, render: (e) => fmt.money(e.salario) },
           { key: 'e', label: 'Estado', render: (e) => <Badge value={e.estado} /> },

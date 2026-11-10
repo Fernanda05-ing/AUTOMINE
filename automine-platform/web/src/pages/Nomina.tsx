@@ -80,6 +80,8 @@ function DetallePeriodo({ periodo, onBack, onChanged }: { periodo: Periodo; onBa
       </div>
       <DataTable<NominaT>
         rows={detalle.data}
+        search={(n) => `${n.empleado} ${n.cedula} ${n.cargo}`}
+        searchPlaceholder="Buscar empleado"
         columns={[
           { key: 'e', label: 'Empleado', render: (n) => <><strong>{n.empleado}</strong><div className="muted">{n.cedula} · {n.cargo}</div></> },
           { key: 'd', label: 'Días', num: true, render: (n) => n.diasTrabajados },

@@ -163,6 +163,8 @@ export default function Produccion() {
           </div>
           <DataTable<Registro>
             rows={registros.data}
+            search={(r) => `${r.frente} ${r.turno} ${r.observaciones ?? ''} ${r.asignaciones.map((a) => a.empleado).join(' ')}`}
+            searchPlaceholder="Buscar por frente, turno, trabajador u observación"
             columns={[
               { key: 'f', label: 'Fecha', render: (r) => fmt.date(r.fecha) },
               { key: 't', label: 'Turno', render: (r) => fmt.label(r.turno) },
@@ -170,7 +172,7 @@ export default function Produccion() {
               { key: 'to', label: 'Toneladas', num: true, render: (r) => <strong>{fmt.num(r.toneladas)}</strong> },
               { key: 'h', label: 'Horas', num: true, render: (r) => fmt.num(r.horasOperacion) },
               { key: 'p', label: 'Personal', render: (r) => <span title={r.asignaciones.map((a) => `${a.empleado} (${a.labor})`).join('\n')}>{r.personal}</span> },
-              { key: 'o', label: 'Observaciones', render: (r) => r.observaciones },
+              { key: 'o', label: 'Observaciones', clamp: true, render: (r) => r.observaciones },
               {
                 key: 'a',
                 label: '',

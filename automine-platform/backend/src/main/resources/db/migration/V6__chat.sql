@@ -1,0 +1,15 @@
+-- Chat interno entre usuarios y celular de contacto de cada usuario.
+ALTER TABLE usuarios ADD COLUMN telefono VARCHAR(20);
+
+CREATE TABLE mensajes (
+    id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+    remitente_id    BIGINT        NOT NULL,
+    destinatario_id BIGINT        NOT NULL,
+    texto           VARCHAR(2000) NOT NULL,
+    leido           BOOLEAN       NOT NULL,
+    created_at      DATETIME      NOT NULL,
+    CONSTRAINT fk_mensaje_remitente FOREIGN KEY (remitente_id) REFERENCES usuarios (id),
+    CONSTRAINT fk_mensaje_destinatario FOREIGN KEY (destinatario_id) REFERENCES usuarios (id)
+);
+CREATE INDEX ix_mensajes_destinatario ON mensajes (destinatario_id, leido);
+CREATE INDEX ix_mensajes_par ON mensajes (remitente_id, destinatario_id);

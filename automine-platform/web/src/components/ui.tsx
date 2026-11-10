@@ -3,13 +3,27 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ChangeEvent,
   type FormEvent,
   type ReactNode,
 } from 'react';
-import { CheckCircle2, Inbox, TrendingDown, TrendingUp, X as XIcon, XCircle, type LucideIcon } from 'lucide-react';
+import {
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Inbox,
+  Search as SearchIcon,
+  TrendingDown,
+  TrendingUp,
+  X as XIcon,
+  XCircle,
+  type LucideIcon,
+} from 'lucide-react';
 import { ApiError } from '../api';
 import { fmt } from '../format';
 
@@ -172,52 +186,145 @@ export interface Column<T> {
   key: string;
   label: string;
   num?: boolean;
+  /** Texto largo: se recorta a dos lineas y se ve completo al pasar el mouse. */
+  clamp?: boolean;
   render?: (row: T) => ReactNode;
 }
 
+const TAMANOS = [10, 25, 50, 100];
+
+/** Quita tildes y pasa a minusculas para buscar sin importar acentos. */
+function normalizar(s: string) {
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+}
+
+/**
+ * Tabla con paginacion (10 por pagina por defecto) y busqueda opcional.
+ * `search` indica el texto de cada fila en el que se busca.
+ */
 export function DataTable<T>({
   columns,
   rows,
   empty = 'No hay registros',
   rowKey,
+  pageSize = 10,
+  search,
+  searchPlaceholder = 'Buscar...',
 }: {
   columns: Column<T>[];
   rows: T[] | null | undefined;
   empty?: string;
   rowKey?: (row: T, i: number) => string | number;
+  pageSize?: number;
+  search?: (row: T) => string;
+  searchPlaceholder?: string;
 }) {
+  const [pagina, setPagina] = useState(0);
+  const [tamano, setTamano] = useState(pageSize);
+  const [query, setQuery] = useState('');
+
+  const filtradas = useMemo(() => {
+    const lista = rows ?? [];
+    if (!search || !query.trim()) return lista;
+    const q = normalizar(query.trim());
+    return lista.filter((r) => normalizar(search(r)).includes(q));
+  }, [rows, search, query]);
+
+  const total = filtradas.length;
+  const paginas = Math.max(1, Math.ceil(total / tamano));
+  const actual = Math.min(pagina, paginas - 1);
+  const desde = actual * tamano;
+  const visibles = filtradas.slice(desde, desde + tamano);
+
+  // Al cambiar los datos o el filtro, volver a la primera pagina
+  useEffect(() => setPagina(0), [rows, query, tamano]);
+
   return (
-    <div className="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            {columns.map((c) => (
-              <th key={c.key} className={c.num ? 'num' : ''}>
-                {c.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {(!rows || rows.length === 0) && (
+    <div className="table-block">
+      {search && (
+        <div className="table-search">
+          <div className="input-icon">
+            <SearchIcon aria-hidden />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={searchPlaceholder} aria-label="Buscar en la tabla" />
+          </div>
+          {query && <span className="muted">{total} resultado{total === 1 ? '' : 's'}</span>}
+        </div>
+      )}
+      <div className="table-wrap">
+        <table>
+          <thead>
             <tr>
-              <td colSpan={columns.length} className="empty">
-                <Inbox aria-hidden />
-                {empty}
-              </td>
-            </tr>
-          )}
-          {rows?.map((row, i) => (
-            <tr key={rowKey ? rowKey(row, i) : ((row as { id?: number }).id ?? i)}>
               {columns.map((c) => (
-                <td key={c.key} className={c.num ? 'num' : ''}>
-                  {c.render ? c.render(row) : String((row as Record<string, unknown>)[c.key] ?? '')}
-                </td>
+                <th key={c.key} className={c.num ? 'num' : ''}>
+                  {c.label}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {visibles.length === 0 && (
+              <tr>
+                <td colSpan={columns.length} className="empty">
+                  <Inbox aria-hidden />
+                  {query ? 'Ningún registro coincide con la búsqueda' : empty}
+                </td>
+              </tr>
+            )}
+            {visibles.map((row, i) => (
+              <tr key={rowKey ? rowKey(row, desde + i) : ((row as { id?: number }).id ?? desde + i)}>
+                {columns.map((c) => {
+                  const contenido = c.render ? c.render(row) : String((row as Record<string, unknown>)[c.key] ?? '');
+                  return (
+                    <td key={c.key} className={c.num ? 'num' : ''}>
+                      {c.clamp ? (
+                        <span className="clamp" title={typeof contenido === 'string' ? contenido : undefined}>
+                          {contenido}
+                        </span>
+                      ) : (
+                        contenido
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {total > TAMANOS[0] && (
+        <div className="pager">
+          <span className="muted">
+            {desde + 1}–{Math.min(desde + tamano, total)} de {total}
+          </span>
+          <label className="pager-size">
+            Mostrar
+            <select value={tamano} onChange={(e) => setTamano(Number(e.target.value))}>
+              {TAMANOS.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="pager-nav">
+            <button className="icon-btn" onClick={() => setPagina(0)} disabled={actual === 0} aria-label="Primera página">
+              <ChevronsLeft />
+            </button>
+            <button className="icon-btn" onClick={() => setPagina(actual - 1)} disabled={actual === 0} aria-label="Página anterior">
+              <ChevronLeft />
+            </button>
+            <span className="pager-pos">
+              Página {actual + 1} de {paginas}
+            </span>
+            <button className="icon-btn" onClick={() => setPagina(actual + 1)} disabled={actual >= paginas - 1} aria-label="Página siguiente">
+              <ChevronRight />
+            </button>
+            <button className="icon-btn" onClick={() => setPagina(paginas - 1)} disabled={actual >= paginas - 1} aria-label="Última página">
+              <ChevronsRight />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

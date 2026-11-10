@@ -42,14 +42,14 @@ public final class SgsstDtos {
 
     public record EventoResponse(Long id, String tipo, Long empleadoId, String cedula, String empleado,
             LocalDateTime fecha, String lugar, String descripcion, String gravedad, int diasIncapacidad, String causas,
-            String acciones, String estado, String reportadoPor) {
+            String acciones, String estado, String reportadoPor, String telefono) {
 
         public static EventoResponse of(EventoSst e) {
             var emp = e.getEmpleado();
             return new EventoResponse(e.getId(), e.getTipo(), emp == null ? null : emp.getId(),
                     emp == null ? null : emp.getCedula(), emp == null ? null : emp.getNombreCompleto(), e.getFecha(),
                     e.getLugar(), e.getDescripcion(), e.getGravedad(), e.getDiasIncapacidad(), e.getCausas(),
-                    e.getAcciones(), e.getEstado(), e.getReportadoPor());
+                    e.getAcciones(), e.getEstado(), e.getReportadoPor(), emp == null ? null : emp.getTelefono());
         }
     }
 

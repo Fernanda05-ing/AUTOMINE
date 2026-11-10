@@ -3,6 +3,7 @@ import { api } from '../api';
 import { useAuth } from '../auth';
 import { ActionButton, Badge, DataTable, Field, FormModal, PageHeader, Stat, Tabs, useForm, useLoad, useToast } from '../components/ui';
 import { daysAgo, fmt, nowLocal, today } from '../format';
+import WhatsApp from '../components/WhatsApp';
 import type { EmpleadoOpcion, ResumenSst } from '../types';
 
 interface Evento {
@@ -18,6 +19,7 @@ interface Evento {
   causas: string | null;
   acciones: string | null;
   estado: string;
+  telefono: string | null;
 }
 interface Epp {
   id: number;
@@ -128,12 +130,13 @@ export default function Sgsst() {
           {rango}
           <DataTable<Evento>
             rows={eventos.data}
+            search={(e) => `${e.tipo} ${e.empleado ?? ''} ${e.lugar} ${e.descripcion} ${e.gravedad}`}
             columns={[
               { key: 'f', label: 'Fecha', render: (e) => fmt.dateTime(e.fecha) },
               { key: 't', label: 'Tipo', render: (e) => <Badge value={e.tipo} /> },
-              { key: 'e', label: 'Trabajador', render: (e) => e.empleado ?? '—' },
+              { key: 'e', label: 'Trabajador', render: (e) => (e.empleado ? <span className="actions">{e.empleado} <WhatsApp soloIcono telefono={e.telefono} mensaje={`Hola ${e.empleado}, te contactamos del área de SG-SST de AUTOMINE sobre el ${e.tipo.toLowerCase()} del ${fmt.date(e.fecha)} en ${e.lugar}.`} /></span> : '—') },
               { key: 'l', label: 'Lugar', render: (e) => e.lugar },
-              { key: 'd', label: 'Descripción', render: (e) => e.descripcion },
+              { key: 'd', label: 'Descripción', clamp: true, render: (e) => e.descripcion },
               { key: 'g', label: 'Gravedad', render: (e) => <Badge value={e.gravedad} /> },
               { key: 'i', label: 'Incap.', num: true, render: (e) => e.diasIncapacidad },
               { key: 's', label: 'Estado', render: (e) => <Badge value={e.estado} /> },
@@ -147,12 +150,13 @@ export default function Sgsst() {
           {rango}
           <DataTable<Epp>
             rows={epp.data}
+            search={(e) => `${e.empleado} ${e.cedula} ${e.elemento}`}
             columns={[
               { key: 'f', label: 'Fecha', render: (e) => fmt.date(e.fecha) },
               { key: 'e', label: 'Trabajador', render: (e) => <>{e.empleado}<div className="muted">{e.cedula}</div></> },
               { key: 'el', label: 'Elemento', render: (e) => e.elemento },
               { key: 'c', label: 'Cantidad', num: true, render: (e) => fmt.num(e.cantidad) },
-              { key: 'o', label: 'Observaciones', render: (e) => e.observaciones },
+              { key: 'o', label: 'Observaciones', clamp: true, render: (e) => e.observaciones },
               { key: 'p', label: 'Entregado por', render: (e) => e.entregadoPor },
             ]}
           />
@@ -161,6 +165,7 @@ export default function Sgsst() {
       {tab === 'capacitaciones' && (
         <DataTable<Capacitacion>
           rows={caps.data}
+          search={(c) => `${c.tema} ${c.instructor} ${c.estado}`}
           columns={[
             { key: 'f', label: 'Fecha', render: (c) => fmt.dateTime(c.fecha) },
             { key: 't', label: 'Tema', render: (c) => <><strong>{c.tema}</strong><div className="muted">{c.descripcion}</div></> },
@@ -185,14 +190,15 @@ export default function Sgsst() {
       {tab === 'riesgos' && (
         <DataTable<Riesgo>
           rows={riesgos.data}
+          search={(x) => `${x.proceso} ${x.actividad} ${x.peligro} ${x.clasificacion} ${x.interpretacion}`}
           columns={[
             { key: 'p', label: 'Proceso / actividad', render: (x) => <><strong>{x.proceso}</strong><div className="muted">{x.actividad}</div></> },
             { key: 'pe', label: 'Peligro', render: (x) => <>{x.peligro}<div className="muted">{fmt.label(x.clasificacion)}</div></> },
-            { key: 'ef', label: 'Efectos', render: (x) => x.efectos },
+            { key: 'ef', label: 'Efectos', clamp: true, render: (x) => x.efectos },
             { key: 'pr', label: 'P', num: true, render: (x) => x.probabilidad },
             { key: 'se', label: 'S', num: true, render: (x) => x.severidad },
             { key: 'n', label: 'Nivel', render: (x) => <Badge value={x.interpretacion} /> },
-            { key: 'c', label: 'Controles', render: (x) => x.controles },
+            { key: 'c', label: 'Controles', clamp: true, render: (x) => x.controles },
             {
               key: 'a',
               label: '',

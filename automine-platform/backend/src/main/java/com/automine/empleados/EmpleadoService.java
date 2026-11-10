@@ -296,7 +296,7 @@ public class EmpleadoService {
         e.setNombres(r.nombres().trim());
         e.setApellidos(r.apellidos().trim());
         e.setEmail(blank(r.email()) == null ? null : r.email().trim().toLowerCase());
-        e.setTelefono(blank(r.telefono()));
+        e.setTelefono(celular(r.telefono()));
         e.setDireccion(blank(r.direccion()));
         e.setFechaNacimiento(r.fechaNacimiento());
         e.setCargo(r.cargo().trim());
@@ -310,6 +310,15 @@ public class EmpleadoService {
         e.setEps(blank(r.eps()));
         e.setFondoPension(blank(r.fondoPension()));
         e.setArl(blank(r.arl()));
+    }
+
+    /** Guarda el celular como 10 digitos (sin +57, espacios ni guiones) para usarlo con WhatsApp. */
+    public static String celular(String s) {
+        if (s == null || s.isBlank()) {
+            return null;
+        }
+        String d = s.replaceAll("[^0-9]", "");
+        return d.length() == 12 && d.startsWith("57") ? d.substring(2) : d;
     }
 
     private static String blank(String s) {

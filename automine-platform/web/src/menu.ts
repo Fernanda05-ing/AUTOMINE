@@ -6,6 +6,7 @@ import {
   FileBadge,
   HardHat,
   LayoutDashboard,
+  MessagesSquare,
   type LucideIcon,
   Mountain,
   Settings,
@@ -25,6 +26,7 @@ export interface MenuItem {
 
 export const MENU: MenuItem[] = [
   { path: '/', label: 'Inicio', roles: ['*'], section: 'General', icon: LayoutDashboard },
+  { path: '/mensajes', label: 'Mensajes', roles: ['*'], section: 'General', icon: MessagesSquare },
   { path: '/mi-portal', label: 'Mi portal', roles: ['EMPLEADO', 'SUPERVISOR', 'SGSST', 'RRHH', 'CONTADOR', 'ALMACENISTA', 'GERENTE'], section: 'General', icon: UserRound },
   { path: '/empleados', label: 'Empleados', roles: ['RRHH', 'GERENTE'], section: 'Talento humano', icon: Users },
   { path: '/certificados', label: 'Certificados', roles: ['RRHH', 'GERENTE'], section: 'Talento humano', icon: FileBadge },

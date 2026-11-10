@@ -10,6 +10,7 @@ export default function Perfil() {
   const toast = useToast();
   const [nombre, setNombre] = useState(user?.nombre ?? '');
   const [email, setEmail] = useState(user?.email ?? '');
+  const [telefono, setTelefono] = useState(user?.telefono ?? '');
   const [actual, setActual] = useState('');
   const [nueva, setNueva] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -23,6 +24,7 @@ export default function Perfil() {
         usuarioId: user.id,
         nombre,
         email,
+        telefono,
         password: nueva || null,
         passwordActual: nueva ? actual : null,
       });
@@ -46,6 +48,9 @@ export default function Perfil() {
           </Field>
           <Field label="Correo">
             <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+          </Field>
+          <Field label="Celular de contacto (WhatsApp)">
+            <input inputMode="tel" placeholder="300 123 4567" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
           </Field>
           <Field label="Contraseña actual (solo si va a cambiarla)">
             <input type="password" value={actual} onChange={(e) => setActual(e.target.value)} autoComplete="current-password" />
