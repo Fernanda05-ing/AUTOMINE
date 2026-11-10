@@ -168,6 +168,10 @@ class Api {
     return text.isEmpty ? null : jsonDecode(text);
   }
 
+  /// Cabeceras autenticadas para peticiones multipart con varios archivos.
+  Future<Map<String, String>> cabeceras() async =>
+      {'User-Agent': 'AutomineMovil/1.0', if (_token != null) 'Authorization': 'Bearer $_token'};
+
   /// Formulario multipart sin archivo (por ejemplo, marcacion manual).
   Future<dynamic> enviarFormulario(String path, Map<String, String> campos) async {
     final req = http.MultipartRequest('POST', Uri.parse('$_base$path'));

@@ -179,6 +179,32 @@ public class NotificacionService {
                 ok ? "El pago de las vacaciones se incluye en la nómina del mes." : "Motivo: " + v.getMotivoRechazo()));
     }
 
+    /** A SG-SST: examenes medicos vencidos, por vencer o faltantes. */
+    public void examenesPendientes(List<String> lineas) {
+        if (!activas() || lineas.isEmpty()) {
+            return;
+        }
+        Correo c = Correo.de("Exámenes médicos pendientes (" + lineas.size() + ")", "Evaluaciones médicas por gestionar",
+                "Ver salud ocupacional", props.publicUrl() + "/salud",
+                String.join("\n", lineas.size() > 40 ? lineas.subList(0, 40) : lineas)
+                        + (lineas.size() > 40 ? "\n... y " + (lineas.size() - 40) + " más" : ""),
+                "Programe las evaluaciones con la IPS y registre el concepto de aptitud en AUTOMINE.");
+        aRoles(c, Roles.SGSST);
+    }
+
+    /** A almacen, supervision y SG-SST: un equipo quedo NO APTO en la inspeccion preoperacional. */
+    public void equipoNoApto(String equipo, String inspector, List<String> fallas) {
+        if (!activas()) {
+            return;
+        }
+        Correo c = Correo.de("Equipo NO APTO: " + equipo, "Equipo fuera de operación", "Ver inspecciones",
+                props.publicUrl() + "/inspecciones",
+                "La inspección preoperacional de " + equipo + " (por " + inspector + ") encontró fallas críticas:\n"
+                        + String.join("\n", fallas),
+                "El equipo quedó en mantenimiento. No debe operarse hasta corregir las fallas.");
+        aRoles(c, Roles.ALMACENISTA, Roles.SUPERVISOR, Roles.SGSST);
+    }
+
     private static String etiqueta(String codigo) {
         String t = codigo.replace('_', ' ').toLowerCase();
         return Character.toUpperCase(t.charAt(0)) + t.substring(1);

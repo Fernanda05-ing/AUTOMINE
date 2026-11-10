@@ -7,6 +7,7 @@ import '../ui.dart';
 import 'chat.dart';
 import 'vacaciones.dart';
 import 'asistencia.dart';
+import 'inspecciones.dart';
 import 'login.dart';
 import 'pagos.dart';
 import 'perfil.dart';
@@ -65,6 +66,7 @@ class _InicioScreenState extends State<InicioScreen> {
           _Seccion('Certificados', Icons.workspace_premium_outlined, CertificadosScreen(empleadoId: u.empleadoId!)),
         if (u.empleadoId != null) _Seccion('Turnos', Icons.schedule, TurnosScreen(empleadoId: u.empleadoId!)),
         if (u.empleadoId != null) _Seccion('Novedades', Icons.event_note_outlined, const NovedadesScreen()),
+        if (u.tiene(['SGSST', 'SUPERVISOR', 'ALMACENISTA'])) _Seccion('Inspección', Icons.fact_check_outlined, const InspeccionesScreen()),
         if (u.tiene(['SUPERVISOR', 'GERENTE'])) _Seccion('Producción', Icons.landscape_outlined, const ProduccionScreen()),
         _Seccion('Mensajes', Icons.forum_outlined, _chat),
       ];
