@@ -55,6 +55,8 @@ public class Nomina {
     private BigDecimal valorHorasExtra;
     private BigDecimal bonificaciones;
     private BigDecimal auxilioTransporte;
+    private Integer diasIncapacidad = 0;
+    private BigDecimal valorIncapacidad = BigDecimal.ZERO;
     private BigDecimal totalDevengado;
     private BigDecimal salud;
     private BigDecimal pension;
@@ -81,6 +83,8 @@ public class Nomina {
     public interface Repo extends JpaRepository<Nomina, Long> {
 
         boolean existsByPeriodoIdAndEmpleadoId(Long periodoId, Long empleadoId);
+
+        java.util.Optional<Nomina> findByPeriodoIdAndEmpleadoId(Long periodoId, Long empleadoId);
 
         @EntityGraph(attributePaths = { "empleado", "periodo" })
         List<Nomina> findByPeriodoIdOrderByEmpleadoApellidosAsc(Long periodoId);

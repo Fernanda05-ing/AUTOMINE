@@ -125,6 +125,28 @@ export const api = {
     const q = qs(extra);
     return request<T>('POST', path + q, fd, true);
   },
+  /** Envia un formulario con archivos (multipart). */
+  form: <T>(method: 'POST' | 'PUT', path: string, fd: FormData) => request<T>(method, path, fd, true),
+  /** Abre un archivo autenticado (PDF o imagen) en una pestaña nueva. */
+  async open(path: string) {
+    const token = session.token();
+    const ventana = window.open('', '_blank');
+    const res = await fetch(BASE + path, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+    if (!res.ok) {
+      ventana?.close();
+      let message = `Error ${res.status}`;
+      try {
+        message = (await res.json()).message ?? message;
+      } catch {
+        /* nada */
+      }
+      throw new ApiError(res.status, message);
+    }
+    const url = URL.createObjectURL(await res.blob());
+    if (ventana) ventana.location.href = url;
+    else window.location.href = url;
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  },
   /** Descarga un archivo (PDF/Excel) autenticado y lo guarda en el equipo. */
   async download(path: string, params?: Record<string, unknown>, fallbackName = 'archivo') {
     const token = session.token();

@@ -115,6 +115,8 @@ export interface Nomina {
   cargo: string;
   salarioBase: number;
   diasTrabajados: number;
+  diasIncapacidad: number;
+  valorIncapacidad: number;
   salarioDevengado: number;
   horasExtraDiurnas: number;
   horasExtraNocturnas: number;

@@ -37,7 +37,12 @@ function NovedadesForm({ nomina, onClose, onSaved }: { nomina: NominaT; onClose:
     >
       {(err) => (
         <div className="form-grid">
-          <Field label="Días trabajados (0-30)" error={err.diasTrabajados}><input type="number" min={0} max={30} {...f.bind('diasTrabajados')} /></Field>
+          <Field
+            label={nomina.diasIncapacidad > 0 ? `Días trabajados (máx. ${30 - nomina.diasIncapacidad}: tiene ${nomina.diasIncapacidad} de incapacidad)` : 'Días trabajados (0-30)'}
+            error={err.diasTrabajados}
+          >
+            <input type="number" min={0} max={30 - (nomina.diasIncapacidad ?? 0)} {...f.bind('diasTrabajados')} />
+          </Field>
           <Field label="Bonificaciones ($)"><input type="number" min={0} {...f.bind('bonificaciones')} /></Field>
           <Field label="Horas extra diurnas"><input type="number" min={0} step="0.5" {...f.bind('horasExtraDiurnas')} /></Field>
           <Field label="Horas extra nocturnas"><input type="number" min={0} step="0.5" {...f.bind('horasExtraNocturnas')} /></Field>
@@ -84,7 +89,18 @@ function DetallePeriodo({ periodo, onBack, onChanged }: { periodo: Periodo; onBa
         searchPlaceholder="Buscar empleado"
         columns={[
           { key: 'e', label: 'Empleado', render: (n) => <><strong>{n.empleado}</strong><div className="muted">{n.cedula} · {n.cargo}</div></> },
-          { key: 'd', label: 'Días', num: true, render: (n) => n.diasTrabajados },
+          {
+            key: 'd',
+            label: 'Días',
+            num: true,
+            render: (n) => (
+              <>
+                {n.diasTrabajados}
+                {n.diasIncapacidad > 0 && <div className="muted" title={`Incapacidad: ${fmt.money(n.valorIncapacidad)}`}>+{n.diasIncapacidad} incap.</div>}
+              </>
+            ),
+          },
+          { key: 'i', label: 'Incapac.', num: true, render: (n) => (n.valorIncapacidad > 0 ? fmt.money(n.valorIncapacidad) : '—') },
           { key: 's', label: 'Salario', num: true, render: (n) => fmt.money(n.salarioDevengado) },
           { key: 'x', label: 'Extras', num: true, render: (n) => fmt.money(n.valorHorasExtra) },
           { key: 'b', label: 'Bonif.', num: true, render: (n) => fmt.money(n.bonificaciones) },
@@ -118,7 +134,7 @@ export default function Nomina() {
   const [abierto, setAbierto] = useState<Periodo | null>(null);
   const [modal, setModal] = useState<'generar' | 'liquidar' | null>(null);
   const gen = useForm({ anio: String(ahora.getFullYear()), mes: String(ahora.getMonth() + 1) });
-  const liq = useForm({ empleadoId: '', anio: String(ahora.getFullYear()), mes: String(ahora.getMonth() + 1), diasTrabajados: '30', horasExtraDiurnas: '0', horasExtraNocturnas: '0', horasExtraDominicales: '0', bonificaciones: '0', otrosDescuentos: '0', detalleDescuentos: '' });
+  const liq = useForm({ empleadoId: '', anio: String(ahora.getFullYear()), mes: String(ahora.getMonth() + 1), diasTrabajados: '', horasExtraDiurnas: '0', horasExtraNocturnas: '0', horasExtraDominicales: '0', bonificaciones: '0', otrosDescuentos: '0', detalleDescuentos: '' });
   const empleados = useLoad(() => (can('CONTADOR') ? api.get<EmpleadoOpcion[]>('/Employees/Options') : Promise.resolve([])));
   const liquida = can('CONTADOR');
 
@@ -182,7 +198,7 @@ export default function Nomina() {
           onSubmit={async () => {
             const v = liq.values;
             const n = await api.post<NominaT>('/Payroll', {
-              empleadoId: Number(v.empleadoId), anio: Number(v.anio), mes: Number(v.mes), diasTrabajados: Number(v.diasTrabajados),
+              empleadoId: Number(v.empleadoId), anio: Number(v.anio), mes: Number(v.mes), diasTrabajados: v.diasTrabajados === '' ? null : Number(v.diasTrabajados),
               horasExtraDiurnas: Number(v.horasExtraDiurnas), horasExtraNocturnas: Number(v.horasExtraNocturnas), horasExtraDominicales: Number(v.horasExtraDominicales),
               bonificaciones: Number(v.bonificaciones), otrosDescuentos: Number(v.otrosDescuentos), detalleDescuentos: v.detalleDescuentos,
             });
@@ -202,7 +218,7 @@ export default function Nomina() {
               </Field>
               <Field label="Año"><input type="number" {...liq.bind('anio')} /></Field>
               <Field label="Mes"><select {...liq.bind('mes')}>{Array.from({ length: 12 }, (_, i) => <option key={i} value={i + 1}>{fmt.mes(i + 1)}</option>)}</select></Field>
-              <Field label="Días trabajados"><input type="number" min={0} max={30} {...liq.bind('diasTrabajados')} /></Field>
+              <Field label="Días trabajados"><input type="number" min={0} max={30} placeholder="Automático: 30 menos incapacidades" {...liq.bind('diasTrabajados')} /></Field>
               <Field label="Bonificaciones ($)"><input type="number" min={0} {...liq.bind('bonificaciones')} /></Field>
               <Field label="Horas extra diurnas"><input type="number" min={0} step="0.5" {...liq.bind('horasExtraDiurnas')} /></Field>
               <Field label="Horas extra nocturnas"><input type="number" min={0} step="0.5" {...liq.bind('horasExtraNocturnas')} /></Field>

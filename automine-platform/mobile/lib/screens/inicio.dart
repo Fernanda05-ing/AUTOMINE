@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../api.dart';
 import '../ui.dart';
 import 'chat.dart';
+import 'incapacidades.dart';
 import 'login.dart';
 import 'pagos.dart';
 import 'perfil.dart';
@@ -61,9 +62,9 @@ class _InicioScreenState extends State<InicioScreen> {
         if (u.empleadoId != null)
           _Seccion('Certificados', Icons.workspace_premium_outlined, CertificadosScreen(empleadoId: u.empleadoId!)),
         if (u.empleadoId != null) _Seccion('Turnos', Icons.schedule, TurnosScreen(empleadoId: u.empleadoId!)),
+        if (u.empleadoId != null) _Seccion('Incapacidades', Icons.medical_services_outlined, const IncapacidadesScreen()),
         if (u.tiene(['SUPERVISOR', 'GERENTE'])) _Seccion('Producción', Icons.landscape_outlined, const ProduccionScreen()),
         _Seccion('Mensajes', Icons.forum_outlined, _chat),
-        _Seccion('Perfil', Icons.person_outline, const PerfilScreen()),
       ];
 
   @override
@@ -76,6 +77,12 @@ class _InicioScreenState extends State<InicioScreen> {
       appBar: AppBar(
         title: Text(secciones[i].titulo),
         actions: [
+          IconButton(
+            tooltip: 'Mi perfil',
+            icon: const Icon(Icons.account_circle_outlined),
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => Scaffold(appBar: AppBar(title: const Text('Mi perfil')), body: const PerfilScreen()))),
+          ),
           IconButton(
             tooltip: 'Cerrar sesión',
             icon: const Icon(Icons.logout),
@@ -93,6 +100,9 @@ class _InicioScreenState extends State<InicioScreen> {
         selectedIndex: i,
         indicatorColor: colorDorado.withValues(alpha: 0.35),
         onDestinationSelected: (n) => setState(() => _actual = n),
+        labelBehavior: secciones.length > 5
+            ? NavigationDestinationLabelBehavior.onlyShowSelected
+            : NavigationDestinationLabelBehavior.alwaysShow,
         destinations: secciones
             .map((s) => NavigationDestination(
                   icon: s.pantalla == _chat && _noLeidos > 0

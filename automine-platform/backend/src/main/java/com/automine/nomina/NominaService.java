@@ -1,7 +1,9 @@
 package com.automine.nomina;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +17,8 @@ import com.automine.common.ParametroService;
 import com.automine.common.PdfBuilder;
 import com.automine.config.AppProperties;
 import com.automine.empleados.Empleado;
+import com.automine.incapacidades.CalculadoraIncapacidad;
+import com.automine.incapacidades.Incapacidad;
 import com.automine.nomina.NominaDtos.GenerarPeriodoResponse;
 import com.automine.nomina.NominaDtos.NominaRequest;
 import com.automine.nomina.NominaDtos.NominaResponse;
@@ -35,6 +39,7 @@ public class NominaService {
     private final AuditService audit;
     private final com.automine.notificaciones.NotificacionService notificaciones;
     private final AppProperties props;
+    private final Incapacidad.Repo incapacidades;
 
     public CalculadoraNomina.Parametros parametros() {
         return new CalculadoraNomina.Parametros(parametros.decimal("SALARIO_MINIMO"),
@@ -61,7 +66,8 @@ public class NominaService {
         n.setEmpleado(e);
         n.setSalarioBase(req.salarioBase() != null ? req.salarioBase() : e.getSalario());
         n.setEstado(Nomina.PENDIENTE);
-        aplicarNovedades(n, req.diasTrabajados() == null ? 30 : req.diasTrabajados(), req.horasExtraDiurnas(),
+        aplicarNovedades(n, req.diasTrabajados() == null ? 30 - incapacidad(n).dias() : req.diasTrabajados(),
+                req.horasExtraDiurnas(),
                 req.horasExtraNocturnas(), req.horasExtraDominicales(), req.bonificaciones(), req.otrosDescuentos(),
                 req.detalleDescuentos());
         nominas.save(n);
@@ -86,7 +92,7 @@ public class NominaService {
             n.setEmpleado(e);
             n.setSalarioBase(e.getSalario());
             n.setEstado(Nomina.PENDIENTE);
-            aplicarNovedades(n, 30, null, null, null, null, null, null);
+            aplicarNovedades(n, 30 - incapacidad(n).dias(), null, null, null, null, null, null);
             nominas.save(n);
             creadas++;
         }
@@ -173,7 +179,9 @@ public class NominaService {
                 new String[] { "Cédula", e.getCedula() },
                 new String[] { "Cargo", e.getCargo() },
                 new String[] { "Salario base", Fmt.money(n.getSalarioBase()) },
-                new String[] { "Días trabajados", String.valueOf(n.getDiasTrabajados()) },
+                new String[] { "Días trabajados", String.valueOf(n.getDiasTrabajados())
+                        + (n.getDiasIncapacidad() != null && n.getDiasIncapacidad() > 0
+                                ? " + " + n.getDiasIncapacidad() + " de incapacidad" : "") },
                 new String[] { "Cuenta", nvl(e.getBanco()) + " " + nvl(e.getTipoCuenta()) + " " + nvl(e.getNumeroCuenta()) },
                 new String[] { "Estado", n.getEstado() }));
         pdf.subtitle("Devengados");
@@ -184,6 +192,10 @@ public class NominaService {
                         + Fmt.num(n.getHorasExtraDominicales()),
                 Fmt.money(n.getValorHorasExtra()) });
         dev.add(new String[] { "Bonificaciones", "", Fmt.money(n.getBonificaciones()) });
+        if (n.getDiasIncapacidad() != null && n.getDiasIncapacidad() > 0) {
+            dev.add(new String[] { "Incapacidades", n.getDiasIncapacidad() + " días",
+                    Fmt.money(n.getValorIncapacidad()) });
+        }
         dev.add(new String[] { "Auxilio de transporte", "", Fmt.money(n.getAuxilioTransporte()) });
         dev.add(new String[] { "TOTAL DEVENGADO", "", Fmt.money(n.getTotalDevengado()) });
         pdf.table(new String[] { "Concepto", "Detalle", "Valor" }, dev);
@@ -202,8 +214,13 @@ public class NominaService {
 
     void aplicarNovedades(Nomina n, int dias, BigDecimal hed, BigDecimal hen, BigDecimal hedd, BigDecimal bonif,
             BigDecimal otros, String detalle) {
+        CalculadoraIncapacidad.Resultado incap = incapacidad(n);
+        if (dias + incap.dias() > 30) {
+            throw ApiException.badRequest("Los días trabajados (" + dias + ") más los días de incapacidad aprobados ("
+                    + incap.dias() + ") superan los 30 días del mes");
+        }
         var in = new CalculadoraNomina.Entrada(n.getSalarioBase(), dias, nz(hed), nz(hen), nz(hedd), nz(bonif),
-                nz(otros));
+                nz(otros), incap.valor());
         CalculadoraNomina.Resultado r;
         try {
             r = CalculadoraNomina.calcular(in, parametros());
@@ -211,6 +228,8 @@ public class NominaService {
             throw ApiException.badRequest(ex.getMessage());
         }
         n.setDiasTrabajados(dias);
+        n.setDiasIncapacidad(incap.dias());
+        n.setValorIncapacidad(incap.valor());
         n.setHorasExtraDiurnas(in.horasExtraDiurnas());
         n.setHorasExtraNocturnas(in.horasExtraNocturnas());
         n.setHorasExtraDominicales(in.horasExtraDominicales());
@@ -226,6 +245,71 @@ public class NominaService {
         n.setFondoSolidaridad(r.fondoSolidaridad());
         n.setTotalDescuentos(r.totalDescuentos());
         n.setNetoPagar(r.netoPagar());
+    }
+
+    /** Dias y valor de las incapacidades aprobadas del empleado en el mes de la nomina. */
+    private CalculadoraIncapacidad.Resultado incapacidad(Nomina n) {
+        PeriodoNomina p = n.getPeriodo();
+        YearMonth mes = YearMonth.of(p.getAnio(), p.getMes());
+        List<Incapacidad> lista = incapacidades.aprobadasEnRango(n.getEmpleado().getId(), mes.atDay(1),
+                mes.atEndOfMonth());
+        if (lista.isEmpty()) {
+            return CalculadoraIncapacidad.Resultado.CERO;
+        }
+        List<CalculadoraIncapacidad.Tramo> tramos = lista.stream()
+                .map(i -> new CalculadoraIncapacidad.Tramo(i.getTipo(), i.getFechaInicio(), i.getFechaFin(),
+                        diasPrevios(i, 0)))
+                .toList();
+        return CalculadoraIncapacidad.delMes(tramos, mes, n.getSalarioBase(), parametros.decimal("SALARIO_MINIMO"));
+    }
+
+    /** En una prorroga el conteo de dias (1-90 al 66,67 %, 91-180 al 50 %) continua desde la anterior. */
+    private int diasPrevios(Incapacidad i, int profundidad) {
+        if (!i.isProrroga() || profundidad > 12) {
+            return 0;
+        }
+        return incapacidades
+                .findFirstByEmpleadoIdAndEstadoAndFechaFinBeforeOrderByFechaFinDesc(i.getEmpleado().getId(),
+                        Incapacidad.APROBADA, i.getFechaInicio())
+                .filter(a -> a.getTipo().equals(i.getTipo())
+                        && !a.getFechaFin().isBefore(i.getFechaInicio().minusDays(30)))
+                .map(a -> a.getDias() + diasPrevios(a, profundidad + 1))
+                .orElse(0);
+    }
+
+    /**
+     * Al aprobar o anular una incapacidad se recalculan las nominas abiertas de los meses que cubre.
+     * Devuelve un aviso si alguno de esos meses ya estaba aprobado (se ajusta en el siguiente periodo).
+     */
+    @Transactional
+    public String recalcularIncapacidades(Long empleadoId, LocalDate desde, LocalDate hasta) {
+        List<String> cerrados = new ArrayList<>();
+        for (YearMonth m = YearMonth.from(desde); !m.isAfter(YearMonth.from(hasta)); m = m.plusMonths(1)) {
+            var periodo = periodos.findByAnioAndMes(m.getYear(), m.getMonthValue());
+            if (periodo.isEmpty()) {
+                continue;
+            }
+            var nomina = nominas.findByPeriodoIdAndEmpleadoId(periodo.get().getId(), empleadoId);
+            if (nomina.isEmpty()) {
+                continue;
+            }
+            Nomina n = nomina.get();
+            if (!PeriodoNomina.ABIERTO.equals(periodo.get().getEstado())) {
+                cerrados.add(Fmt.mes(m.getMonthValue()) + " " + m.getYear());
+                continue;
+            }
+            int anterior = n.getDiasIncapacidad() == null ? 0 : n.getDiasIncapacidad();
+            int nuevos = incapacidad(n).dias();
+            int dias = Math.max(0, Math.min(30 - nuevos, n.getDiasTrabajados() + anterior - nuevos));
+            aplicarNovedades(n, dias, n.getHorasExtraDiurnas(), n.getHorasExtraNocturnas(),
+                    n.getHorasExtraDominicales(), n.getBonificaciones(), n.getOtrosDescuentos(),
+                    n.getDetalleDescuentos());
+            audit.registrar("INCAPACIDAD", "Nómina", n.getId(),
+                    nuevos + " días de incapacidad, neto " + Fmt.money(n.getNetoPagar()));
+        }
+        return cerrados.isEmpty() ? null
+                : "La nómina de " + String.join(", ", cerrados)
+                        + " ya estaba aprobada: ajuste la diferencia en el siguiente periodo.";
     }
 
     private PeriodoNomina periodoAbierto(int anio, int mes) {

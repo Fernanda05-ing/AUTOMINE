@@ -114,6 +114,45 @@ public class NotificacionService {
                         + "\nReferencia: " + referencia));
     }
 
+    /** A SG-SST y Talento Humano: hay una incapacidad por revisar. */
+    public void incapacidadRegistrada(com.automine.incapacidades.Incapacidad i) {
+        if (!activas()) {
+            return;
+        }
+        Empleado e = i.getEmpleado();
+        Correo c = Correo.de("Incapacidad por revisar: " + e.getNombreCompleto(), "Nueva incapacidad registrada",
+                "Revisar incapacidad", props.publicUrl() + "/incapacidades",
+                "Trabajador: " + e.getNombreCompleto() + " (" + e.getCedula() + ")\nTipo: " + etiqueta(i.getTipo())
+                        + "\nDel " + Fmt.date(i.getFechaInicio()) + " al " + Fmt.date(i.getFechaFin()) + " ("
+                        + i.getDias() + " días)",
+                "Revise el certificado adjunto y apruebe o rechace la incapacidad en AUTOMINE.");
+        aRoles(c, Roles.SGSST, Roles.RRHH);
+    }
+
+    /** Al trabajador: su incapacidad fue aprobada o rechazada. */
+    public void incapacidadRevisada(com.automine.incapacidades.Incapacidad i) {
+        if (!activas()) {
+            return;
+        }
+        Empleado e = i.getEmpleado();
+        boolean aprobada = com.automine.incapacidades.Incapacidad.APROBADA.equals(i.getEstado());
+        String periodo = "del " + Fmt.date(i.getFechaInicio()) + " al " + Fmt.date(i.getFechaFin());
+        mail.enviar(correoDe(e), Correo.de(
+                aprobada ? "Su incapacidad fue aprobada" : "Su incapacidad necesita corrección",
+                aprobada ? "Incapacidad aprobada" : "Incapacidad rechazada", "Ver mis incapacidades",
+                props.publicUrl() + "/incapacidades",
+                "Hola, " + e.getNombres() + ". Su incapacidad " + periodo + " fue "
+                        + (aprobada ? "aprobada y se tendrá en cuenta en su nómina." : "rechazada."),
+                aprobada ? "No necesita hacer nada más."
+                        : "Motivo: " + i.getMotivoRechazo()
+                                + "\nPuede subir de nuevo el certificado desde AUTOMINE (web o aplicación móvil)."));
+    }
+
+    private static String etiqueta(String codigo) {
+        String t = codigo.replace('_', ' ').toLowerCase();
+        return Character.toUpperCase(t.charAt(0)) + t.substring(1);
+    }
+
     /** Resumen diario (6:30 a. m.) de stock bajo y mantenimientos proximos para almacen. */
     @Scheduled(cron = "0 30 6 * * *", zone = "America/Bogota")
     @Transactional(readOnly = true)
