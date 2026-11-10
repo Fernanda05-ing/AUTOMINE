@@ -168,6 +168,37 @@ class Api {
     return text.isEmpty ? null : jsonDecode(text);
   }
 
+  /// Formulario multipart sin archivo (por ejemplo, marcacion manual).
+  Future<dynamic> enviarFormulario(String path, Map<String, String> campos) async {
+    final req = http.MultipartRequest('POST', Uri.parse('$_base$path'));
+    req.headers['User-Agent'] = 'AutomineMovil/1.0';
+    if (_token != null) req.headers['Authorization'] = 'Bearer $_token';
+    req.fields.addAll(campos);
+    http.Response res;
+    try {
+      res = await http.Response.fromStream(await req.send().timeout(const Duration(seconds: 30)));
+    } catch (_) {
+      throw ApiException(0, 'Sin conexión con el servidor');
+    }
+    final text = utf8.decode(res.bodyBytes);
+    if (res.statusCode >= 400) {
+      String msg = 'Error ${res.statusCode}';
+      try {
+        msg = jsonDecode(text)['message'] ?? msg;
+      } catch (_) {}
+      throw ApiException(res.statusCode, msg);
+    }
+    return text.isEmpty ? null : jsonDecode(text);
+  }
+
+  /// Descarga un archivo autenticado y lo guarda en [ruta] (sin abrirlo).
+  Future<void> guardarArchivo(String path, String ruta) async {
+    final res = await http.get(Uri.parse('$_base$path'),
+        headers: {if (_token != null) 'Authorization': 'Bearer $_token'}).timeout(const Duration(seconds: 30));
+    if (res.statusCode >= 400) throw ApiException(res.statusCode, 'No se pudo descargar el archivo');
+    await File(ruta).writeAsBytes(res.bodyBytes);
+  }
+
   /// Descarga un archivo autenticado (PDF o imagen), lo guarda y lo abre con la app del celular.
   Future<void> abrirArchivo(String path, String nombre) async {
     final res = await http.get(Uri.parse('$_base$path'),

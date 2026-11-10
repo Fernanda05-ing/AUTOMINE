@@ -336,6 +336,30 @@ public class NominaService {
                         + " ya estaba aprobada: ajuste la diferencia en el siguiente periodo.";
     }
 
+    /**
+     * Pone las horas extra calculadas por la asistencia en la nomina del mes (si esta abierta).
+     * Devuelve APLICADA, CERRADA o SIN_NOMINA.
+     */
+    @Transactional
+    public String aplicarHorasExtra(Long empleadoId, int anio, int mes, BigDecimal hed, BigDecimal hen,
+            BigDecimal hedd) {
+        var periodo = periodos.findByAnioAndMes(anio, mes);
+        if (periodo.isEmpty()) {
+            return "SIN_NOMINA";
+        }
+        var nomina = nominas.findByPeriodoIdAndEmpleadoId(periodo.get().getId(), empleadoId);
+        if (nomina.isEmpty()) {
+            return "SIN_NOMINA";
+        }
+        if (!PeriodoNomina.ABIERTO.equals(periodo.get().getEstado())) {
+            return "CERRADA";
+        }
+        Nomina n = nomina.get();
+        aplicarNovedades(n, n.getDiasTrabajados(), hed, hen, hedd, n.getBonificaciones(), n.getOtrosDescuentos(),
+                n.getDetalleDescuentos());
+        return "APLICADA";
+    }
+
     private PeriodoNomina periodoAbierto(int anio, int mes) {
         PeriodoNomina p = periodos.findByAnioAndMes(anio, mes).orElseGet(() -> {
             PeriodoNomina nuevo = new PeriodoNomina();

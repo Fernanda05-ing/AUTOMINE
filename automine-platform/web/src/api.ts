@@ -127,6 +127,13 @@ export const api = {
   },
   /** Envia un formulario con archivos (multipart). */
   form: <T>(method: 'POST' | 'PUT', path: string, fd: FormData) => request<T>(method, path, fd, true),
+  /** Descarga un archivo autenticado y devuelve una URL local (para mostrar fotos). */
+  async blob(path: string) {
+    const token = session.token();
+    const res = await fetch(BASE + path, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+    if (!res.ok) throw new ApiError(res.status, 'No se pudo cargar el archivo');
+    return URL.createObjectURL(await res.blob());
+  },
   /** Abre un archivo autenticado (PDF o imagen) en una pestaña nueva. */
   async open(path: string) {
     const token = session.token();

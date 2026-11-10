@@ -6,6 +6,7 @@ import '../api.dart';
 import '../ui.dart';
 import 'chat.dart';
 import 'vacaciones.dart';
+import 'asistencia.dart';
 import 'login.dart';
 import 'pagos.dart';
 import 'perfil.dart';
@@ -58,6 +59,7 @@ class _InicioScreenState extends State<InicioScreen> {
   }
 
   List<_Seccion> _secciones(Usuario u) => [
+        if (u.tiene(['SGSST'])) _Seccion('Asistencia', Icons.how_to_reg_outlined, const AsistenciaScreen()),
         if (u.empleadoId != null) _Seccion('Mis pagos', Icons.payments_outlined, PagosScreen(empleadoId: u.empleadoId!)),
         if (u.empleadoId != null)
           _Seccion('Certificados', Icons.workspace_premium_outlined, CertificadosScreen(empleadoId: u.empleadoId!)),

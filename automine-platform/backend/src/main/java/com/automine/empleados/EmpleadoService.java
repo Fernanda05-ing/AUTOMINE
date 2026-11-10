@@ -44,6 +44,7 @@ public class EmpleadoService {
     private final DocumentoEmpleado.Repo documentos;
     private final UsuarioRepository usuarios;
     private final RolRepository roles;
+    private final com.automine.asistencia.Rostro.Repo rostros;
     private final PasswordEncoder encoder;
     private final com.automine.notificaciones.NotificacionService notificaciones;
     private final AuditService audit;
@@ -164,6 +165,8 @@ public class EmpleadoService {
             c.setFechaFin(req.fechaRetiro());
         });
         usuarios.findFirstByEmpleadoId(id).ifPresent(u -> u.setEstado(Usuario.INACTIVO));
+        // Ley 1581: el dato biometrico solo se conserva mientras dure la relacion laboral
+        rostros.borrarDeEmpleado(id);
         agregarHistorial(id, req.fechaRetiro(), "RETIRO", req.motivo());
         audit.registrar("INACTIVAR", "Empleado", id, req.motivo());
         return obtener(id);
