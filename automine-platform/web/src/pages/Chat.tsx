@@ -93,7 +93,10 @@ export default function Chat() {
     };
   }, [activo, cargarConversaciones]);
 
-  useEffect(() => fin.current?.scrollIntoView({ block: 'end' }), [mensajes]);
+  // Bajar al ultimo mensaje (con llaves: el efecto no debe devolver el resultado de scrollIntoView)
+  useEffect(() => {
+    fin.current?.scrollIntoView({ block: 'end' });
+  }, [mensajes]);
 
   const enviar = async (e?: FormEvent) => {
     e?.preventDefault();

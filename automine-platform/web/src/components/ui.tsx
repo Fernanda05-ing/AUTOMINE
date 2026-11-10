@@ -237,7 +237,9 @@ export function DataTable<T>({
   const visibles = filtradas.slice(desde, desde + tamano);
 
   // Al cambiar los datos o el filtro, volver a la primera pagina
-  useEffect(() => setPagina(0), [rows, query, tamano]);
+  useEffect(() => {
+    setPagina(0);
+  }, [rows, query, tamano]);
 
   return (
     <div className="table-block">
