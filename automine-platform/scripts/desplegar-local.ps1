@@ -16,7 +16,19 @@ function Leer-Secreto([string]$texto) {
 
 Write-Host ""
 Write-Host "=== Despliegue local de AUTOMINE ===" -ForegroundColor Cyan
-$env:DB_PASSWORD = Leer-Secreto "Contrasena de MySQL local (usuario root)"
+# Contrasena de MySQL: se verifica antes de compilar (hasta 3 intentos)
+$mysql = "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe"
+for ($intento = 1; $intento -le 3; $intento++) {
+    $env:DB_PASSWORD = Leer-Secreto "Contrasena de MySQL local (usuario root)"
+    if (-not (Test-Path $mysql)) { break }
+    $env:MYSQL_PWD = $env:DB_PASSWORD
+    & $mysql -u root -e "SELECT 1" 2>$null | Out-Null
+    $ok = ($LASTEXITCODE -eq 0)
+    Remove-Item Env:MYSQL_PWD -ErrorAction SilentlyContinue
+    if ($ok) { Write-Host "Conexion con MySQL correcta." -ForegroundColor Green; break }
+    Write-Host "MySQL rechazo la contrasena (intento $intento de 3). Revise que este bien escrita." -ForegroundColor Red
+    if ($intento -eq 3) { Write-Host "No se pudo conectar a MySQL. Ejecute el script de nuevo." -ForegroundColor Red; exit 1 }
+}
 $env:MAIL_USERNAME = Read-Host "Cuenta de Gmail para enviar correos (Enter = sin correo)"
 if ($env:MAIL_USERNAME) {
     $env:MAIL_PASSWORD = (Leer-Secreto "Contrasena de aplicacion de Gmail (16 letras)").Replace(" ", "")
