@@ -16,6 +16,8 @@ const Empleados = lazy(() => import('./pages/Empleados'));
 const Certificados = lazy(() => import('./pages/Certificados'));
 const Nomina = lazy(() => import('./pages/Nomina'));
 const Incapacidades = lazy(() => import('./pages/Incapacidades'));
+const Vacaciones = lazy(() => import('./pages/Vacaciones'));
+const Prestaciones = lazy(() => import('./pages/Prestaciones'));
 const Consignaciones = lazy(() => import('./pages/Consignaciones'));
 const Produccion = lazy(() => import('./pages/Produccion'));
 const Inventario = lazy(() => import('./pages/Inventario'));
@@ -53,6 +55,8 @@ export default function App() {
         {p('/empleados', <Empleados />)}
         {p('/certificados', <Certificados />)}
         {p('/incapacidades', <Incapacidades />)}
+        {p('/vacaciones', <Vacaciones />)}
+        {p('/prestaciones', <Prestaciones />)}
         {p('/nomina', <Nomina />)}
         {p('/consignaciones', <Consignaciones />)}
         {p('/produccion', <Produccion />)}

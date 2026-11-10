@@ -38,10 +38,10 @@ function NovedadesForm({ nomina, onClose, onSaved }: { nomina: NominaT; onClose:
       {(err) => (
         <div className="form-grid">
           <Field
-            label={nomina.diasIncapacidad > 0 ? `Días trabajados (máx. ${30 - nomina.diasIncapacidad}: tiene ${nomina.diasIncapacidad} de incapacidad)` : 'Días trabajados (0-30)'}
+            label={nomina.diasIncapacidad + nomina.diasVacaciones > 0 ? `Días trabajados (máx. ${30 - nomina.diasIncapacidad - nomina.diasVacaciones}: tiene ${nomina.diasIncapacidad} de incapacidad y ${nomina.diasVacaciones} de vacaciones)` : 'Días trabajados (0-30)'}
             error={err.diasTrabajados}
           >
-            <input type="number" min={0} max={30 - (nomina.diasIncapacidad ?? 0)} {...f.bind('diasTrabajados')} />
+            <input type="number" min={0} max={30 - (nomina.diasIncapacidad ?? 0) - (nomina.diasVacaciones ?? 0)} {...f.bind('diasTrabajados')} />
           </Field>
           <Field label="Bonificaciones ($)"><input type="number" min={0} {...f.bind('bonificaciones')} /></Field>
           <Field label="Horas extra diurnas"><input type="number" min={0} step="0.5" {...f.bind('horasExtraDiurnas')} /></Field>
@@ -97,10 +97,11 @@ function DetallePeriodo({ periodo, onBack, onChanged }: { periodo: Periodo; onBa
               <>
                 {n.diasTrabajados}
                 {n.diasIncapacidad > 0 && <div className="muted" title={`Incapacidad: ${fmt.money(n.valorIncapacidad)}`}>+{n.diasIncapacidad} incap.</div>}
+                {n.diasVacaciones > 0 && <div className="muted" title={`Vacaciones: ${fmt.money(n.valorVacaciones)}`}>+{n.diasVacaciones} vac.</div>}
               </>
             ),
           },
-          { key: 'i', label: 'Incapac.', num: true, render: (n) => (n.valorIncapacidad > 0 ? fmt.money(n.valorIncapacidad) : '—') },
+          { key: 'i', label: 'Incap./Vac.', num: true, render: (n) => (n.valorIncapacidad + n.valorVacaciones > 0 ? fmt.money(n.valorIncapacidad + n.valorVacaciones) : '—') },
           { key: 's', label: 'Salario', num: true, render: (n) => fmt.money(n.salarioDevengado) },
           { key: 'x', label: 'Extras', num: true, render: (n) => fmt.money(n.valorHorasExtra) },
           { key: 'b', label: 'Bonif.', num: true, render: (n) => fmt.money(n.bonificaciones) },
@@ -218,7 +219,7 @@ export default function Nomina() {
               </Field>
               <Field label="Año"><input type="number" {...liq.bind('anio')} /></Field>
               <Field label="Mes"><select {...liq.bind('mes')}>{Array.from({ length: 12 }, (_, i) => <option key={i} value={i + 1}>{fmt.mes(i + 1)}</option>)}</select></Field>
-              <Field label="Días trabajados"><input type="number" min={0} max={30} placeholder="Automático: 30 menos incapacidades" {...liq.bind('diasTrabajados')} /></Field>
+              <Field label="Días trabajados"><input type="number" min={0} max={30} placeholder="Automático: 30 menos incapacidades y vacaciones" {...liq.bind('diasTrabajados')} /></Field>
               <Field label="Bonificaciones ($)"><input type="number" min={0} {...liq.bind('bonificaciones')} /></Field>
               <Field label="Horas extra diurnas"><input type="number" min={0} step="0.5" {...liq.bind('horasExtraDiurnas')} /></Field>
               <Field label="Horas extra nocturnas"><input type="number" min={0} step="0.5" {...liq.bind('horasExtraNocturnas')} /></Field>

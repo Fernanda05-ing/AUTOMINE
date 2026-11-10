@@ -26,12 +26,14 @@ export default function Layout() {
   const location = useLocation();
   const [noLeidos, setNoLeidos] = useState(0);
   const [incapPendientes, setIncapPendientes] = useState(0);
+  const [vacPendientes, setVacPendientes] = useState(0);
   useEffect(() => {
     if (!user || user.debeCambiarPassword) return;
     const revisa = ['ADMIN', 'SGSST', 'RRHH'].includes(user.rol);
     const consultar = () => {
       api.get<{ noLeidos: number }>('/Chat/Unread').then((r) => setNoLeidos(r.noLeidos)).catch(() => {});
       if (revisa) api.get<{ pendientes: number }>('/Disabilities/Summary').then((r) => setIncapPendientes(r.pendientes)).catch(() => {});
+      if (['ADMIN', 'RRHH'].includes(user.rol)) api.get<{ pendientes: number }>('/Vacations/Summary').then((r) => setVacPendientes(r.pendientes)).catch(() => {});
     };
     consultar();
     const t = setInterval(consultar, 20000);
@@ -61,6 +63,7 @@ export default function Layout() {
                     <i.icon aria-hidden />
                     {i.label}
                     {i.path === '/mensajes' && noLeidos > 0 && <span className="nav-badge">{noLeidos > 99 ? '99+' : noLeidos}</span>}
+                    {i.path === '/vacaciones' && vacPendientes > 0 && <span className="nav-badge" title="Vacaciones por aprobar">{vacPendientes}</span>}
                     {i.path === '/incapacidades' && incapPendientes > 0 && (
                       <span className="nav-badge" title="Incapacidades por revisar">{incapPendientes > 99 ? '99+' : incapPendientes}</span>
                     )}

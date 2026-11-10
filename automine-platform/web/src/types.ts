@@ -117,6 +117,8 @@ export interface Nomina {
   diasTrabajados: number;
   diasIncapacidad: number;
   valorIncapacidad: number;
+  diasVacaciones: number;
+  valorVacaciones: number;
   salarioDevengado: number;
   horasExtraDiurnas: number;
   horasExtraNocturnas: number;

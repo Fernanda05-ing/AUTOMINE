@@ -21,13 +21,20 @@ public final class CalculadoraNomina {
 
     public record Entrada(BigDecimal salarioBase, int diasTrabajados, BigDecimal horasExtraDiurnas,
             BigDecimal horasExtraNocturnas, BigDecimal horasExtraDominicales, BigDecimal bonificaciones,
-            BigDecimal otrosDescuentos, BigDecimal valorIncapacidad) {
+            BigDecimal otrosDescuentos, BigDecimal valorIncapacidad, BigDecimal valorVacaciones) {
+
+        public Entrada(BigDecimal salarioBase, int diasTrabajados, BigDecimal horasExtraDiurnas,
+                BigDecimal horasExtraNocturnas, BigDecimal horasExtraDominicales, BigDecimal bonificaciones,
+                BigDecimal otrosDescuentos, BigDecimal valorIncapacidad) {
+            this(salarioBase, diasTrabajados, horasExtraDiurnas, horasExtraNocturnas, horasExtraDominicales,
+                    bonificaciones, otrosDescuentos, valorIncapacidad, BigDecimal.ZERO);
+        }
 
         public Entrada(BigDecimal salarioBase, int diasTrabajados, BigDecimal horasExtraDiurnas,
                 BigDecimal horasExtraNocturnas, BigDecimal horasExtraDominicales, BigDecimal bonificaciones,
                 BigDecimal otrosDescuentos) {
             this(salarioBase, diasTrabajados, horasExtraDiurnas, horasExtraNocturnas, horasExtraDominicales,
-                    bonificaciones, otrosDescuentos, BigDecimal.ZERO);
+                    bonificaciones, otrosDescuentos, BigDecimal.ZERO, BigDecimal.ZERO);
         }
     }
 
@@ -61,10 +68,13 @@ public final class CalculadoraNomina {
         BigDecimal bonificaciones = nz(in.bonificaciones());
         // Incapacidad reconocida (EPS/ARL), calculada aparte; no da derecho a auxilio de transporte
         BigDecimal incapacidad = nz(in.valorIncapacidad());
-        BigDecimal totalDevengado = devengado.add(extras).add(bonificaciones).add(incapacidad).add(auxilio);
+        // Vacaciones disfrutadas en el mes: salario ordinario, sin auxilio de transporte
+        BigDecimal vacaciones = nz(in.valorVacaciones());
+        BigDecimal totalDevengado = devengado.add(extras).add(bonificaciones).add(incapacidad).add(vacaciones)
+                .add(auxilio);
 
         // RF013: aportes de ley sobre el ingreso base de cotizacion (sin auxilio de transporte)
-        BigDecimal ibc = devengado.add(extras).add(bonificaciones).add(incapacidad);
+        BigDecimal ibc = devengado.add(extras).add(bonificaciones).add(incapacidad).add(vacaciones);
         BigDecimal salud = peso(ibc.multiply(p.porcSalud()));
         BigDecimal pension = peso(ibc.multiply(p.porcPension()));
         BigDecimal solidaridad = BigDecimal.ZERO;

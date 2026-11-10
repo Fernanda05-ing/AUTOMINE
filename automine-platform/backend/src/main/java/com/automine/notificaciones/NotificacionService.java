@@ -148,6 +148,37 @@ public class NotificacionService {
                                 + "\nPuede subir de nuevo el certificado desde AUTOMINE (web o aplicación móvil)."));
     }
 
+    /** A Talento Humano: hay una solicitud de vacaciones. */
+    public void vacacionesSolicitadas(com.automine.prestaciones.Vacacion v) {
+        if (!activas()) {
+            return;
+        }
+        Empleado e = v.getEmpleado();
+        Correo c = Correo.de("Solicitud de vacaciones: " + e.getNombreCompleto(), "Nueva solicitud de vacaciones",
+                "Revisar solicitud", props.publicUrl() + "/vacaciones",
+                "Trabajador: " + e.getNombreCompleto() + " (" + e.getCedula() + ")\n" + v.getDiasHabiles()
+                        + " días hábiles: del " + Fmt.date(v.getFechaInicio()) + " al " + Fmt.date(v.getFechaFin())
+                        + "\nRegresa el " + Fmt.date(v.getFechaRegreso()),
+                "Apruebe o rechace la solicitud en AUTOMINE.");
+        aRoles(c, Roles.RRHH);
+    }
+
+    /** Al trabajador: respuesta a su solicitud de vacaciones. */
+    public void vacacionesRevisadas(com.automine.prestaciones.Vacacion v) {
+        if (!activas()) {
+            return;
+        }
+        Empleado e = v.getEmpleado();
+        boolean ok = com.automine.prestaciones.Vacacion.APROBADA.equals(v.getEstado());
+        mail.enviar(correoDe(e), Correo.de(ok ? "Sus vacaciones fueron aprobadas" : "Su solicitud de vacaciones fue rechazada",
+                ok ? "Vacaciones aprobadas" : "Vacaciones rechazadas", "Ver mis vacaciones", props.publicUrl() + "/vacaciones",
+                "Hola, " + e.getNombres() + ". " + (ok
+                        ? "Disfrute sus " + v.getDiasHabiles() + " días hábiles de vacaciones del " + Fmt.date(v.getFechaInicio())
+                                + " al " + Fmt.date(v.getFechaFin()) + ". Debe regresar el " + Fmt.date(v.getFechaRegreso()) + "."
+                        : "Su solicitud de vacaciones desde el " + Fmt.date(v.getFechaInicio()) + " fue rechazada."),
+                ok ? "El pago de las vacaciones se incluye en la nómina del mes." : "Motivo: " + v.getMotivoRechazo()));
+    }
+
     private static String etiqueta(String codigo) {
         String t = codigo.replace('_', ' ').toLowerCase();
         return Character.toUpperCase(t.charAt(0)) + t.substring(1);

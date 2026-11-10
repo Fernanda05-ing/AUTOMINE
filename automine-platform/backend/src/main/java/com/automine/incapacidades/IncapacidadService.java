@@ -147,7 +147,7 @@ public class IncapacidadService {
         i.setRevisadoPor(UsuarioActual.get().nombre());
         i.setFechaRevision(LocalDateTime.now());
         incapacidades.save(i);
-        String aviso = aprobar ? nomina.recalcularIncapacidades(i.getEmpleado().getId(), i.getFechaInicio(), i.getFechaFin())
+        String aviso = aprobar ? nomina.recalcularNovedades(i.getEmpleado().getId(), i.getFechaInicio(), i.getFechaFin())
                 : null;
         audit.registrar(aprobar ? "APROBAR" : "RECHAZAR", "Incapacidad", id,
                 i.getEmpleado().getNombreCompleto() + (aprobar ? "" : ": " + i.getMotivoRechazo()));
@@ -168,7 +168,7 @@ public class IncapacidadService {
         i.setFechaRevision(LocalDateTime.now());
         incapacidades.save(i);
         String aviso = estabaAprobada
-                ? nomina.recalcularIncapacidades(i.getEmpleado().getId(), i.getFechaInicio(), i.getFechaFin())
+                ? nomina.recalcularNovedades(i.getEmpleado().getId(), i.getFechaInicio(), i.getFechaFin())
                 : null;
         audit.registrar("ANULAR", "Incapacidad", id, i.getEmpleado().getNombreCompleto() + ": " + req.motivo());
         return IncapacidadResponse.of(i, aviso);

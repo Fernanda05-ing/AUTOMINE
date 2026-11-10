@@ -57,6 +57,8 @@ public class Nomina {
     private BigDecimal auxilioTransporte;
     private Integer diasIncapacidad = 0;
     private BigDecimal valorIncapacidad = BigDecimal.ZERO;
+    private Integer diasVacaciones = 0;
+    private BigDecimal valorVacaciones = BigDecimal.ZERO;
     private BigDecimal totalDevengado;
     private BigDecimal salud;
     private BigDecimal pension;

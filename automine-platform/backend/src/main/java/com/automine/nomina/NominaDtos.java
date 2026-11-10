@@ -51,7 +51,7 @@ public final class NominaDtos {
             BigDecimal auxilioTransporte, BigDecimal totalDevengado, BigDecimal salud, BigDecimal pension,
             BigDecimal fondoSolidaridad, BigDecimal otrosDescuentos, String detalleDescuentos,
             BigDecimal totalDescuentos, BigDecimal netoPagar, String estado, LocalDateTime createdAt, String telefono,
-            int diasIncapacidad, BigDecimal valorIncapacidad) {
+            int diasIncapacidad, BigDecimal valorIncapacidad, int diasVacaciones, BigDecimal valorVacaciones) {
 
         public static NominaResponse of(Nomina n) {
             var p = n.getPeriodo();
@@ -63,7 +63,8 @@ public final class NominaDtos {
                     n.getAuxilioTransporte(), n.getTotalDevengado(), n.getSalud(), n.getPension(),
                     n.getFondoSolidaridad(), n.getOtrosDescuentos(), n.getDetalleDescuentos(),
                     n.getTotalDescuentos(), n.getNetoPagar(), n.getEstado(), n.getCreatedAt(), e.getTelefono(),
-                    n.getDiasIncapacidad() == null ? 0 : n.getDiasIncapacidad(), n.getValorIncapacidad());
+                    n.getDiasIncapacidad() == null ? 0 : n.getDiasIncapacidad(), n.getValorIncapacidad(),
+                    n.getDiasVacaciones() == null ? 0 : n.getDiasVacaciones(), n.getValorVacaciones());
         }
     }
 

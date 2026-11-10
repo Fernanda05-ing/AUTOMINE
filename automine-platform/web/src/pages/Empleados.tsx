@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { api } from '../api';
+import LiquidacionRetiro from '../components/LiquidacionRetiro';
 import { useAuth } from '../auth';
 import {
   ActionButton,
@@ -116,6 +117,7 @@ function Detalle({ empleado, onClose, onChanged }: { empleado: Empleado; onClose
   const con = useForm({ tipo: empleado.tipoContrato, cargo: empleado.cargo, salario: String(empleado.salario), fechaInicio: today(), fechaFin: '' });
   const ret = useForm({ fechaRetiro: today(), motivo: '' });
   const [tipoDoc, setTipoDoc] = useState('CEDULA');
+  const [liquidar, setLiquidar] = useState(false);
 
   const e = empleado;
   return (
@@ -124,6 +126,9 @@ function Detalle({ empleado, onClose, onChanged }: { empleado: Empleado; onClose
         <Badge value={e.estado} />
         <span className="muted">CC {e.cedula} · {e.cargo}</span>
         <div style={{ flex: 1 }} />
+        {editable && e.estado === 'ACTIVO' && ['INDEFINIDO', 'FIJO', 'OBRA_LABOR'].includes(e.tipoContrato) && (
+          <button className="btn small primary" onClick={() => setLiquidar(true)}>Liquidar retiro</button>
+        )}
         {editable && e.estado === 'ACTIVO' && <button className="btn small danger" onClick={() => setModal('retiro')}>Inactivar</button>}
         {editable && e.estado === 'INACTIVO' && (
           <ActionButton action={() => api.put(`/Employee/${e.id}/Reactivate`)} success="Empleado reactivado" onDone={onChanged}>Reactivar</ActionButton>
@@ -261,6 +266,7 @@ function Detalle({ empleado, onClose, onChanged }: { empleado: Empleado; onClose
           )}
         </FormModal>
       )}
+      {liquidar && <LiquidacionRetiro empleado={e} onClose={() => setLiquidar(false)} onDone={onChanged} />}
       {modal === 'retiro' && (
         <FormModal title="Inactivar empleado" submitLabel="Inactivar" onClose={() => setModal(null)} onSubmit={async () => { await api.put(`/Employee/${e.id}/Deactivate`, ret.values); toast.ok('Empleado inactivado'); setModal(null); onChanged(); }}>
           {(err) => (
