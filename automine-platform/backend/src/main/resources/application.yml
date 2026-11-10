@@ -17,15 +17,17 @@ spring:
       maximum-pool-size: ${DB_POOL_SIZE:10}
   jpa:
     hibernate:
-      # El esquema lo crea Flyway; Hibernate solo verifica que las entidades coincidan.
-      ddl-auto: validate
+      # El esquema lo crea Flyway; Hibernate verifica que las entidades coincidan (MySQL).
+      # En PostgreSQL/Supabase se usa JPA_DDL_AUTO=none (los tipos binarios se nombran distinto).
+      ddl-auto: ${JPA_DDL_AUTO:validate}
     open-in-view: false
     properties:
       hibernate:
         jdbc.time_zone: America/Bogota
   flyway:
     enabled: true
-    locations: classpath:db/migration
+    # Una carpeta por motor: db/migration/mysql (local) y db/migration/postgresql (Supabase)
+    locations: classpath:db/migration/{vendor}
   jackson:
     time-zone: America/Bogota
     serialization:
@@ -96,6 +98,12 @@ app:
     departamento: ${DIAN_DEPARTAMENTO:05}
     municipio: ${DIAN_MUNICIPIO:05001}
     direccion: ${COMPANY_ADDRESS:Sin dirección}
+  # Archivos (fotos, certificados): vacio = dentro de la base de datos.
+  # Con Supabase: URL del proyecto y la llave service_role (secreta, solo en el servidor).
+  storage:
+    supabase-url: ${SUPABASE_URL:}
+    supabase-key: ${SUPABASE_SERVICE_KEY:}
+    bucket: ${SUPABASE_BUCKET:automine}
   # Notificaciones push: ruta del JSON de la cuenta de servicio de Firebase. Vacio = desactivadas.
   push:
     credentials: ${FCM_CREDENTIALS:}

@@ -59,8 +59,8 @@ public class Producto {
         boolean existsByCodigoIgnoreCase(String codigo);
 
         @Query("select p from Producto p where (:tipo is null or p.tipo = :tipo) and (:activos = false or p.activo = true) "
-                + "and (:q is null or lower(p.nombre) like lower(concat('%', :q, '%')) "
-                + "or lower(p.codigo) like lower(concat('%', :q, '%'))) order by p.nombre")
+                + "and (:q is null or lower(p.nombre) like lower(concat('%', cast(:q as String), '%')) "
+                + "or lower(p.codigo) like lower(concat('%', cast(:q as String), '%'))) order by p.nombre")
         List<Producto> buscar(String q, String tipo, boolean activos);
 
         @Query("select p from Producto p where p.activo = true and p.cantidad <= p.stockMinimo order by p.nombre")

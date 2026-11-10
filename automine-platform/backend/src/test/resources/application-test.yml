@@ -4,7 +4,13 @@ spring:
     username: sa
     password:
     driver-class-name: org.h2.Driver
+  flyway:
+    # H2 en modo MySQL usa las migraciones de MySQL
+    locations: classpath:db/migration/mysql
   jpa:
+    hibernate:
+      # H2 nombra LONGBLOB distinto que MySQL; el esquema lo aplica Flyway igual
+      ddl-auto: none
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect

@@ -102,7 +102,7 @@ public class ConsignacionController {
         ConsignacionResponse c = service.obtener(id);
         UsuarioActual.verificarEmpleado(c.empleadoId(), Roles.CONTADOR, Roles.GERENTE);
         Consignacion.Comprobante comp = service.comprobante(id);
-        return Files.download(comp.getDatos(), comp.getNombre(), MediaType.parseMediaType(comp.getContentType()),
+        return Files.download(com.automine.common.ArchivoStore.contenido(comp.getDatos()), comp.getNombre(), MediaType.parseMediaType(comp.getContentType()),
                 false);
     }
 }

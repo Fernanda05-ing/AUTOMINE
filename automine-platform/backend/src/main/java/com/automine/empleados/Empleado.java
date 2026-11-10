@@ -86,10 +86,10 @@ public class Empleado {
         long countByEstado(String estado);
 
         @Query("select e from Empleado e where (:estado is null or e.estado = :estado) and ("
-                + ":q is null or lower(e.nombres) like lower(concat('%', :q, '%')) "
-                + "or lower(e.apellidos) like lower(concat('%', :q, '%')) "
-                + "or e.cedula like concat('%', :q, '%') "
-                + "or lower(e.cargo) like lower(concat('%', :q, '%'))) order by e.apellidos, e.nombres")
+                + ":q is null or lower(e.nombres) like lower(concat('%', cast(:q as String), '%')) "
+                + "or lower(e.apellidos) like lower(concat('%', cast(:q as String), '%')) "
+                + "or e.cedula like concat('%', cast(:q as String), '%') "
+                + "or lower(e.cargo) like lower(concat('%', cast(:q as String), '%'))) order by e.apellidos, e.nombres")
         List<Empleado> buscar(String q, String estado);
     }
 }

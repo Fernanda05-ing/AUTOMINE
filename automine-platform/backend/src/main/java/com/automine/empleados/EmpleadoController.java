@@ -141,7 +141,7 @@ public class EmpleadoController {
     @PreAuthorize("hasAnyRole('ADMIN','RRHH')")
     public ResponseEntity<byte[]> download(@PathVariable Long id, @PathVariable Long documentoId) {
         DocumentoEmpleado d = service.documento(id, documentoId);
-        return Files.download(d.getDatos(), d.getNombre(), MediaType.parseMediaType(d.getContentType()), false);
+        return Files.download(com.automine.common.ArchivoStore.contenido(d.getDatos()), d.getNombre(), MediaType.parseMediaType(d.getContentType()), false);
     }
 
     @DeleteMapping("/Employee/{id}/Documents/{documentoId}")

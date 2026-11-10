@@ -67,7 +67,7 @@ public class SaludController {
     @GetMapping("/MedicalExam/{id}/Support")
     public ResponseEntity<byte[]> soporte(@PathVariable Long id) {
         ExamenMedico x = service.soporte(id);
-        return Files.download(x.getSoporte(), x.getSoporteNombre(), MediaType.parseMediaType(x.getSoporteTipo()), true);
+        return Files.download(com.automine.common.ArchivoStore.contenido(x.getSoporte()), x.getSoporteNombre(), MediaType.parseMediaType(x.getSoporteTipo()), true);
     }
 
     @Operation(summary = "Indicadores del SG-SST del año (Resolución 0312 de 2019)")

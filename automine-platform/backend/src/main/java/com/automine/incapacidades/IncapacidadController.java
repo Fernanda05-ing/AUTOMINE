@@ -87,7 +87,7 @@ public class IncapacidadController {
     @GetMapping("/Disability/{id}/Support")
     public ResponseEntity<byte[]> soporte(@PathVariable Long id) {
         Incapacidad.Soporte s = service.soporte(id);
-        return Files.download(s.getDatos(), s.getNombre(), MediaType.parseMediaType(s.getContentType()), true);
+        return Files.download(com.automine.common.ArchivoStore.contenido(s.getDatos()), s.getNombre(), MediaType.parseMediaType(s.getContentType()), true);
     }
 
     @Operation(summary = "Aprobar o rechazar (SG-SST, Talento Humano)")

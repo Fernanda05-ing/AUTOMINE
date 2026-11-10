@@ -36,6 +36,14 @@
         <dependency><groupId>org.flywaydb</groupId><artifactId>flyway-core</artifactId></dependency>
         <dependency><groupId>org.flywaydb</groupId><artifactId>flyway-mysql</artifactId></dependency>
         <dependency><groupId>com.mysql</groupId><artifactId>mysql-connector-j</artifactId><scope>runtime</scope></dependency>
+        <!-- PostgreSQL / Supabase (despliegue en la nube) -->
+        <dependency><groupId>org.flywaydb</groupId><artifactId>flyway-database-postgresql</artifactId></dependency>
+        <dependency><groupId>org.postgresql</groupId><artifactId>postgresql</artifactId><scope>runtime</scope></dependency>
+        <!-- PostgreSQL embebido para probar la compatibilidad sin Docker -->
+        <dependency><groupId>io.zonky.test</groupId><artifactId>embedded-postgres</artifactId><version>2.0.7</version><scope>test</scope>
+            <!-- Usa la version de commons-io que trae Apache POI (Excel) -->
+            <exclusions><exclusion><groupId>commons-io</groupId><artifactId>commons-io</artifactId></exclusion></exclusions>
+        </dependency>
 
         <dependency><groupId>io.jsonwebtoken</groupId><artifactId>jjwt-api</artifactId><version>${jjwt.version}</version></dependency>
         <dependency><groupId>io.jsonwebtoken</groupId><artifactId>jjwt-impl</artifactId><version>${jjwt.version}</version><scope>runtime</scope></dependency>

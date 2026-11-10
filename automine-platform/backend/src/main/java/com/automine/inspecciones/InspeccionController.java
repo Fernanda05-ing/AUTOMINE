@@ -77,7 +77,7 @@ public class InspeccionController {
     @PreAuthorize(CONSULTAN)
     public ResponseEntity<byte[]> foto(@PathVariable Long id, @PathVariable Long fotoId) {
         Inspeccion.Foto f = service.foto(id, fotoId);
-        return Files.download(f.getDatos(), "inspeccion-" + id + "-" + fotoId + ".jpg",
+        return Files.download(com.automine.common.ArchivoStore.contenido(f.getDatos()), "inspeccion-" + id + "-" + fotoId + ".jpg",
                 MediaType.parseMediaType(f.getContentType()), true);
     }
 }

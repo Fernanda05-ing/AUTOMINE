@@ -13,7 +13,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -35,7 +34,7 @@ public class DocumentoEmpleado {
     private String contentType;
     private Long tamano;
 
-    @Lob
+    @jakarta.persistence.Convert(converter = com.automine.common.ArchivoConverter.class)
     @Basic(fetch = FetchType.LAZY)
     @Column(columnDefinition = "LONGBLOB")
     private byte[] datos;

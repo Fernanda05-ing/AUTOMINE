@@ -1,41 +1,67 @@
-# Alternativa a DESPLIEGUE.md: Render (https://render.com) con el Dockerfile.
-# Render no ofrece MySQL administrado: use una base MySQL externa (Aiven, Railway,
-# TiDB Cloud...) y ponga su cadena JDBC en DB_URL. El dominio propio se agrega en
-# Render > Settings > Custom Domains (Render gestiona el HTTPS). No incluye respaldos:
-# active los del proveedor de la base de datos.
+# AUTOMINE en la nube (demostracion gratis): API en Render + base y archivos en Supabase.
+# La web se publica en Vercel (web/vercel.json reenvia /AutomineApi a esta API).
+# Guia completa: DESPLIEGUE-NUBE.md
+#
+# Los valores "sync: false" se escriben en el panel de Render (nunca en este archivo).
 services:
   - type: web
-    name: automine
+    name: automine-api
     runtime: docker
     rootDir: automine-platform
     dockerfilePath: ./Dockerfile
     dockerContext: .
-    plan: starter
+    plan: free
+    region: oregon
     healthCheckPath: /AutomineApi/Health
     envVars:
+      # demo = servidor publico con datos de ejemplo; production = sin datos de ejemplo
       - key: APP_ENV
-        value: production
+        value: demo
+      - key: DEMO_DATA
+        value: "true"
+      # Supabase > Connect > JDBC > "Session pooler" (IPv4):
+      # jdbc:postgresql://aws-0-REGION.pooler.supabase.com:5432/postgres?sslmode=require
       - key: DB_URL
-        sync: false   # jdbc:mysql://HOST:PUERTO/automine_db?sslMode=REQUIRED&serverTimezone=America/Bogota
+        sync: false
       - key: DB_USERNAME
-        sync: false
+        sync: false   # postgres.REFERENCIA_DEL_PROYECTO
       - key: DB_PASSWORD
+        sync: false   # la contrasena de la base de datos de Supabase
+      - key: DB_POOL_SIZE
+        value: "5"
+      # PostgreSQL nombra los tipos binarios distinto que MySQL: el esquema lo controla Flyway
+      - key: JPA_DDL_AUTO
+        value: none
+      # Supabase > Project Settings > API: Project URL y la llave service_role (secreta)
+      - key: SUPABASE_URL
         sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: SUPABASE_BUCKET
+        value: automine
       - key: JWT_SECRET
         generateValue: true
       - key: ADMIN_EMAIL
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
-      - key: DEMO_DATA
-        value: "false"
+      # La direccion de Vercel, p. ej. https://automine.vercel.app
       - key: PUBLIC_URL
-        sync: false   # https://su-dominio
+        sync: false
       - key: CORS_ORIGINS
-        sync: false   # la misma URL publica
+        sync: false
       - key: GOOGLE_CLIENT_ID
         sync: false
       - key: MAIL_USERNAME
-        sync: false
+        value: autominesas@gmail.com
+      - key: MAIL_FROM
+        value: autominesas@gmail.com
       - key: MAIL_PASSWORD
+        sync: false   # contrasena de aplicacion de Gmail (16 letras)
+      - key: COMPANY_NAME
+        value: AUTOMINE S.A.S.
+      - key: COMPANY_NIT
         sync: false
+      # Memoria del plan gratis (512 MB)
+      - key: JAVA_OPTS
+        value: -XX:MaxRAMPercentage=70 -XX:+UseSerialGC -Xss512k -XX:TieredStopAtLevel=1 -Duser.timezone=America/Bogota

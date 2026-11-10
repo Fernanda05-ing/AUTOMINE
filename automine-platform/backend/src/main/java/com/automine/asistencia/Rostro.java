@@ -19,7 +19,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
@@ -46,7 +45,7 @@ public class Rostro {
     private String plantilla;
     private String versionModelo;
 
-    @Lob
+    @jakarta.persistence.Convert(converter = com.automine.common.ArchivoConverter.class)
     @Basic(fetch = FetchType.LAZY)
     @Column(columnDefinition = "LONGBLOB")
     private byte[] foto;

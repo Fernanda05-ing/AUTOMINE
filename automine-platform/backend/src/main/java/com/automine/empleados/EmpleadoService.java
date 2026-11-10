@@ -166,6 +166,7 @@ public class EmpleadoService {
         });
         usuarios.findFirstByEmpleadoId(id).ifPresent(u -> u.setEstado(Usuario.INACTIVO));
         // Ley 1581: el dato biometrico solo se conserva mientras dure la relacion laboral
+        rostros.findByEmpleadoId(id).ifPresent(r -> com.automine.common.ArchivoStore.borrar(r.getFoto()));
         rostros.borrarDeEmpleado(id);
         agregarHistorial(id, req.fechaRetiro(), "RETIRO", req.motivo());
         audit.registrar("INACTIVAR", "Empleado", id, req.motivo());
@@ -280,6 +281,7 @@ public class EmpleadoService {
     @Transactional
     public void eliminarDocumento(Long id, Long documentoId) {
         DocumentoEmpleado d = documento(id, documentoId);
+        com.automine.common.ArchivoStore.borrar(d.getDatos());
         documentos.delete(d);
         audit.registrar("ELIMINAR_DOCUMENTO", "Empleado", id, d.getNombre());
     }

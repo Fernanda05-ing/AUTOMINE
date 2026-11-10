@@ -68,6 +68,7 @@ public class AsistenciaService {
         validarPlantilla(plantilla);
         validarImagen(foto, true);
         Rostro r = rostros.findByEmpleadoId(empleadoId).orElseGet(Rostro::new);
+        com.automine.common.ArchivoStore.borrar(r.getFoto()); // la foto anterior se reemplaza
         r.setEmpleado(e);
         r.setPlantilla(plantilla);
         r.setVersionModelo(version == null || version.isBlank() ? "geo-v1" : version.trim());
@@ -83,6 +84,7 @@ public class AsistenciaService {
 
     @Transactional
     public void borrarRostro(Long empleadoId) {
+        rostros.findByEmpleadoId(empleadoId).ifPresent(r -> com.automine.common.ArchivoStore.borrar(r.getFoto()));
         if (rostros.borrarDeEmpleado(empleadoId) > 0) {
             audit.registrar("BORRAR_ROSTRO", "Empleado", empleadoId, "Plantilla facial eliminada");
         }
@@ -107,7 +109,7 @@ public class AsistenciaService {
     }
 
     public byte[] fotoRostro(Long empleadoId) {
-        return rostros.findByEmpleadoId(empleadoId).map(Rostro::getFoto)
+        return rostros.findByEmpleadoId(empleadoId).map(r -> com.automine.common.ArchivoStore.contenido(r.getFoto()))
                 .orElseThrow(() -> ApiException.notFound("Rostro registrado"));
     }
 
@@ -188,7 +190,7 @@ public class AsistenciaService {
         if (m.getFoto() == null) {
             throw ApiException.notFound("Foto");
         }
-        return m.getFoto();
+        return com.automine.common.ArchivoStore.contenido(m.getFoto());
     }
 
     /** Horas trabajadas y extra del mes por trabajador. */
