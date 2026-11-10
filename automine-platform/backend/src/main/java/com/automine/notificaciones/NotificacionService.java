@@ -43,6 +43,7 @@ public class NotificacionService {
     private final Producto.Repo productos;
     private final Maquinaria.Repo maquinas;
     private final AppProperties props;
+    private final com.automine.push.PushService push;
 
     // ------------------------------ Cuenta ------------------------------
 
@@ -91,6 +92,8 @@ public class NotificacionService {
 
     /** A cada empleado del periodo: su desprendible ya esta disponible. */
     public void nominaAprobada(int anio, int mes, List<Empleado> empleados) {
+        empleados.forEach(e -> push.aEmpleado(e.getId(), "Desprendible de " + Fmt.mes(mes) + " disponible",
+                "Ya puede consultar su pago de nómina de " + Fmt.mes(mes) + " " + anio + ".", "pagos"));
         if (!activas()) {
             return;
         }
@@ -104,6 +107,7 @@ public class NotificacionService {
     }
 
     public void pagoAprobado(Empleado e, BigDecimal valor, String banco, String cuenta, LocalDate fecha, String referencia) {
+        push.aEmpleado(e.getId(), "Pago consignado", "Se consignaron " + Fmt.money(valor) + " en su cuenta " + banco + ".", "pagos");
         if (!activas()) {
             return;
         }
@@ -131,6 +135,9 @@ public class NotificacionService {
 
     /** Al trabajador: su incapacidad fue aprobada o rechazada. */
     public void incapacidadRevisada(com.automine.incapacidades.Incapacidad i) {
+        push.aEmpleado(i.getEmpleado().getId(), "Incapacidad " + i.getEstado().toLowerCase(),
+                com.automine.incapacidades.Incapacidad.APROBADA.equals(i.getEstado()) ? "Su incapacidad fue aprobada."
+                        : "Revise el motivo y suba de nuevo el certificado: " + i.getMotivoRechazo(), "novedades");
         if (!activas()) {
             return;
         }
@@ -165,6 +172,10 @@ public class NotificacionService {
 
     /** Al trabajador: respuesta a su solicitud de vacaciones. */
     public void vacacionesRevisadas(com.automine.prestaciones.Vacacion v) {
+        push.aEmpleado(v.getEmpleado().getId(), "Vacaciones " + v.getEstado().toLowerCase(),
+                com.automine.prestaciones.Vacacion.APROBADA.equals(v.getEstado())
+                        ? "Del " + Fmt.date(v.getFechaInicio()) + " al " + Fmt.date(v.getFechaFin()) + ". Regresa el " + Fmt.date(v.getFechaRegreso()) + "."
+                        : "Motivo: " + v.getMotivoRechazo(), "novedades");
         if (!activas()) {
             return;
         }
@@ -243,6 +254,7 @@ public class NotificacionService {
 
     public static void suspender(boolean valor) {
         suspendidas = valor;
+        com.automine.push.PushService.suspender(valor);
     }
 
     private boolean activas() {

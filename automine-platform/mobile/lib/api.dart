@@ -7,6 +7,8 @@ import 'package:http_parser/http_parser.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'push.dart';
+
 /// URL de la API. Se define al compilar:
 ///   flutter build apk --dart-define=API_URL=https://su-dominio.com
 /// Por defecto apunta a la maquina local vista desde el emulador de Android.
@@ -65,6 +67,7 @@ class Api {
     usuario = Usuario.fromJson(jsonDecode(u));
     try {
       usuario = Usuario.fromJson(await get('/Profile'));
+      Push.registrar();
       return true;
     } catch (_) {
       await _limpiar();
@@ -78,10 +81,12 @@ class Api {
     usuario = Usuario.fromJson(r['usuario']);
     await _storage.write(key: 'token', value: _token);
     await _storage.write(key: 'usuario', value: jsonEncode(usuario!.toJson()));
+    Push.registrar();
     return usuario!;
   }
 
   Future<void> logout() async {
+    await Push.quitar();
     try {
       await _send('POST', '/Logout', body: {});
     } catch (_) {}

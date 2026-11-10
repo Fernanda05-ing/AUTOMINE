@@ -57,8 +57,9 @@ public class PrestacionService {
                 : LocalDate.of(anio, 1, 1);
         LocalDate hasta = PagoPrestacion.PRIMA.equals(tipo) ? LocalDate.of(anio, periodo == 1 ? 6 : 12, periodo == 1 ? 30 : 31)
                 : LocalDate.of(anio, 12, 31);
-        BigDecimal minimo = parametros.decimal("SALARIO_MINIMO");
-        BigDecimal auxilio = parametros.decimal("AUXILIO_TRANSPORTE");
+        LocalDate ref = hasta.isAfter(LocalDate.now()) ? LocalDate.now() : hasta;
+        BigDecimal minimo = parametros.decimal("SALARIO_MINIMO", ref);
+        BigDecimal auxilio = parametros.decimal("AUXILIO_TRANSPORTE", ref);
         List<PrestacionCalculo> detalle = new ArrayList<>();
         BigDecimal total = BigDecimal.ZERO;
         BigDecimal totalIntereses = BigDecimal.ZERO;
@@ -201,8 +202,8 @@ public class PrestacionService {
                 && req.fechaFinContrato() == null) {
             throw ApiException.badRequest("Indique la fecha en que terminaba el contrato para calcular la indemnización");
         }
-        BigDecimal minimo = parametros.decimal("SALARIO_MINIMO");
-        BigDecimal auxilio = parametros.decimal("AUXILIO_TRANSPORTE");
+        BigDecimal minimo = parametros.decimal("SALARIO_MINIMO", retiro);
+        BigDecimal auxilio = parametros.decimal("AUXILIO_TRANSPORTE", retiro);
         BigDecimal salario = e.getSalario();
         BigDecimal base = CalculadoraPrestaciones.base(salario, auxilio, minimo);
         int anio = retiro.getYear();

@@ -161,7 +161,8 @@ class PrestacionesTest {
         }
         assertThat(elena).isNotNull();
         assertThat(elena.get("dias").asInt()).isEqualTo(180);
-        assertThat(elena.get("valor").decimalValue()).isEqualByComparingTo("1100000");
+        // 2026: base = 2.000.000 + auxilio 249.095 -> prima del semestre 1.124.548
+        assertThat(elena.get("valor").decimalValue()).isEqualByComparingTo("1124548");
         call(post("/AutomineApi/Benefits/Settle"), trabajador, Map.of("tipo", "PRIMA", "anio", 2026, "periodo", 1))
                 .andExpect(status().isForbidden());
         call(post("/AutomineApi/Benefits/Settle"), contador, Map.of("tipo", "PRIMA", "anio", 2026, "periodo", 1))

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { api, type Usuario } from '../api';
+import Vigencias from '../components/Vigencias';
 import { useAuth } from '../auth';
 import { ActionButton, Badge, DataTable, Field, FormModal, PageHeader, Tabs, useForm, useLoad, useToast } from '../components/ui';
 import { fmt } from '../format';
@@ -144,6 +145,7 @@ export default function Administracion() {
               { key: 'a', label: '', render: (p) => <button className="btn small" onClick={() => { pf.setValues({ valor: p.valor }); setParam(p); }}>Cambiar</button> },
             ]}
           />
+          <Vigencias />
         </>
       )}
       {form && (

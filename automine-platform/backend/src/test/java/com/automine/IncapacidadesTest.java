@@ -171,7 +171,8 @@ class IncapacidadesTest {
         nominaId = n.get("id").asLong();
         assertThat(n.get("diasTrabajados").asInt()).isEqualTo(20);
         assertThat(n.get("diasIncapacidad").asInt()).isEqualTo(10);
-        assertThat(n.get("valorIncapacidad").decimalValue()).isEqualByComparingTo("474500");
+        // Minimo diario 2026: 1.750.905 / 30 = 58.363,5 x 10 dias
+        assertThat(n.get("valorIncapacidad").decimalValue()).isEqualByComparingTo("583635");
         // No se pueden poner 30 dias trabajados encima de 10 de incapacidad
         call(put("/AutomineApi/Payroll/Detail/" + nominaId), contador, Map.of("diasTrabajados", 30))
                 .andExpect(status().isBadRequest());

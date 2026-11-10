@@ -42,12 +42,18 @@ public class NominaService {
     private final Incapacidad.Repo incapacidades;
     private final com.automine.prestaciones.Vacacion.Repo vacaciones;
 
-    public CalculadoraNomina.Parametros parametros() {
-        return new CalculadoraNomina.Parametros(parametros.decimal("SALARIO_MINIMO"),
-                parametros.decimal("AUXILIO_TRANSPORTE"), parametros.decimal("HORAS_MES"),
-                parametros.decimal("RECARGO_EXTRA_DIURNA"), parametros.decimal("RECARGO_EXTRA_NOCTURNA"),
-                parametros.decimal("RECARGO_EXTRA_DOMINICAL"), parametros.decimal("PORC_SALUD"),
-                parametros.decimal("PORC_PENSION"), parametros.decimal("PORC_SOLIDARIDAD"));
+    /** Parametros vigentes en una fecha (salario minimo, auxilio, jornada y recargos cambian en el tiempo). */
+    public CalculadoraNomina.Parametros parametros(LocalDate f) {
+        return new CalculadoraNomina.Parametros(parametros.decimal("SALARIO_MINIMO", f),
+                parametros.decimal("AUXILIO_TRANSPORTE", f), parametros.decimal("HORAS_MES", f),
+                parametros.decimal("RECARGO_EXTRA_DIURNA", f), parametros.decimal("RECARGO_EXTRA_NOCTURNA", f),
+                parametros.decimal("RECARGO_EXTRA_DOMINICAL", f), parametros.decimal("PORC_SALUD", f),
+                parametros.decimal("PORC_PENSION", f), parametros.decimal("PORC_SOLIDARIDAD", f));
+    }
+
+    /** Ultimo dia del mes liquidado: fecha con la que se toman los parametros. */
+    static LocalDate fechaPeriodo(Nomina n) {
+        return YearMonth.of(n.getPeriodo().getAnio(), n.getPeriodo().getMes()).atEndOfMonth();
     }
 
     /** Servicio GeneratePayroll. RN001: un empleado no puede tener dos nominas en el mismo periodo. */
@@ -230,7 +236,7 @@ public class NominaService {
                 nz(otros), incap.valor(), vac.valor());
         CalculadoraNomina.Resultado r;
         try {
-            r = CalculadoraNomina.calcular(in, parametros());
+            r = CalculadoraNomina.calcular(in, parametros(fechaPeriodo(n)));
         } catch (IllegalArgumentException ex) {
             throw ApiException.badRequest(ex.getMessage());
         }
@@ -269,7 +275,7 @@ public class NominaService {
                 .map(i -> new CalculadoraIncapacidad.Tramo(i.getTipo(), i.getFechaInicio(), i.getFechaFin(),
                         diasPrevios(i, 0)))
                 .toList();
-        return CalculadoraIncapacidad.delMes(tramos, mes, n.getSalarioBase(), parametros.decimal("SALARIO_MINIMO"));
+        return CalculadoraIncapacidad.delMes(tramos, mes, n.getSalarioBase(), parametros.decimal("SALARIO_MINIMO", mes.atEndOfMonth()));
     }
 
     /** Dias y valor de las vacaciones aprobadas del empleado en el mes (salario ordinario). */

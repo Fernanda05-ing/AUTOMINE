@@ -35,6 +35,7 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class ChatService {
 
+    private final com.automine.push.PushService push;
     private final Mensaje.Repo mensajes;
     private final UsuarioRepository usuarios;
     private final Empleado.Repo empleados;
@@ -120,6 +121,7 @@ public class ChatService {
         m.setTexto(req.texto().trim());
         m.setLeido(false);
         mensajes.save(m);
+        push.aUsuario(otro.getId(), yo.nombre(), m.getTexto(), "mensajes");
         return dto(m, yo.id());
     }
 

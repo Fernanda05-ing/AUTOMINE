@@ -70,6 +70,11 @@ function DetallePeriodo({ periodo, onBack, onChanged }: { periodo: Periodo; onBa
         <button className="btn" onClick={onBack}>← Periodos</button>
         <button className="btn" onClick={() => api.download('/Reports/nomina/excel', { periodoId: periodo.id }).catch((e) => toast.error(e.message))}>Excel</button>
         <button className="btn" onClick={() => api.download('/Reports/nomina/pdf', { periodoId: periodo.id }).catch((e) => toast.error(e.message))}>PDF</button>
+        {!abierto && (
+          <button className="btn" title="Documentos con la estructura de la DIAN (sin firmar ni enviar)" onClick={() => api.download(`/Payroll/Period/${periodo.id}/Dian`, undefined, 'nomina-electronica.zip').catch((e) => toast.error(e.message))}>
+            XML DIAN
+          </button>
+        )}
         {abierto && user?.rol === 'CONTADOR' && (
           <ActionButton className="btn primary" confirm="Al aprobar, el periodo queda bloqueado y listo para consignar. ¿Continuar?" action={() => api.put(`/Payroll/Period/${periodo.id}/Approve`)} success="Nómina aprobada" onDone={onChanged}>
             Aprobar nómina
@@ -118,6 +123,7 @@ function DetallePeriodo({ periodo, onBack, onChanged }: { periodo: Periodo; onBa
                 {edita && <button className="btn small" onClick={() => setEditar(n)}>Novedades</button>}
                 {edita && <ActionButton className="btn small danger" confirm={`¿Eliminar la liquidación de ${n.empleado}?`} action={() => api.del(`/Payroll/Detail/${n.id}`)} onDone={() => { detalle.reload(); onChanged(); }}>Quitar</ActionButton>}
                 <button className="btn small" onClick={() => api.download(`/Payroll/Detail/${n.id}/Payslip`).catch((e) => toast.error(e.message))}>PDF</button>
+                {!abierto && <button className="btn small" title="Nómina electrónica (estructura DIAN)" onClick={() => api.download(`/Payroll/Detail/${n.id}/Dian`).catch((e) => toast.error(e.message))}>XML</button>}
               </div>
             ),
           },

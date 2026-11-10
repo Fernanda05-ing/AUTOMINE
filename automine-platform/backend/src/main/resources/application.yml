@@ -85,6 +85,20 @@ app:
     city: ${COMPANY_CITY:Medellin, Antioquia}
     signer-name: ${COMPANY_SIGNER_NAME:Direccion de Talento Humano}
     signer-title: ${COMPANY_SIGNER_TITLE:Jefe de Recursos Humanos}
+  # Nomina electronica: datos para el XML con estructura DIAN (no se envia a la DIAN).
+  dian:
+    prefijo: ${DIAN_PREFIJO:NE}
+    # 1 = produccion, 2 = pruebas. PIN e ID los entrega la DIAN al habilitar el software.
+    ambiente: ${DIAN_AMBIENTE:2}
+    software-id: ${DIAN_SOFTWARE_ID:}
+    software-pin: ${DIAN_SOFTWARE_PIN:00000}
+    # Codigos DANE del empleador (05 Antioquia, 05001 Medellin)
+    departamento: ${DIAN_DEPARTAMENTO:05}
+    municipio: ${DIAN_MUNICIPIO:05001}
+    direccion: ${COMPANY_ADDRESS:Sin dirección}
+  # Notificaciones push: ruta del JSON de la cuenta de servicio de Firebase. Vacio = desactivadas.
+  push:
+    credentials: ${FCM_CREDENTIALS:}
   bootstrap:
     # Si la base no tiene usuarios se crea este administrador al arrancar.
     admin-email: ${ADMIN_EMAIL:admin@automine.co}
