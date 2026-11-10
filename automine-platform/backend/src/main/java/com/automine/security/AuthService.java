@@ -38,6 +38,7 @@ public class AuthService {
     private final TokenRevocado.Repo revocados;
     private final PasswordEncoder encoder;
     private final JwtService jwt;
+    private final GoogleTokenVerifier google;
     private final com.automine.notificaciones.NotificacionService notificaciones;
     private final AppProperties props;
 
@@ -63,6 +64,36 @@ public class AuthService {
         }
         u.setUltimoAcceso(LocalDateTime.now());
         registrar(u.getId(), email, BitacoraAcceso.LOGIN_OK, http);
+        JwtService.Token token = jwt.generate(u);
+        return new LoginResponse(token.value(), token.expiresAt(), UsuarioResponse.of(u));
+    }
+
+    /**
+     * Inicio de sesion con Google. Solo entra quien ya tiene usuario en AUTOMINE con ese correo:
+     * las cuentas las crea la empresa y cada una tiene su rol.
+     */
+    @Transactional(noRollbackFor = ApiException.class)
+    public LoginResponse loginGoogle(String credential, HttpServletRequest http) {
+        GoogleTokenVerifier.IdentidadGoogle g = google.verificar(credential);
+        String email = g.email().trim().toLowerCase();
+        Usuario u = usuarios.findByEmailIgnoreCase(email).orElse(null);
+        if (u == null) {
+            registrar(null, email, BitacoraAcceso.LOGIN_FALLIDO, http);
+            throw new ApiException(HttpStatus.FORBIDDEN, "La cuenta " + email + " no tiene acceso a AUTOMINE. "
+                    + "Pida al administrador o a Recursos Humanos que le creen un usuario con ese correo");
+        }
+        if (!Usuario.ACTIVO.equals(u.getEstado())) {
+            registrar(u.getId(), email, BitacoraAcceso.LOGIN_FALLIDO, http);
+            throw new ApiException(HttpStatus.FORBIDDEN, "El usuario está inactivo. Contacte al administrador");
+        }
+        u.setUltimoAcceso(LocalDateTime.now());
+        // Google ya verificó la identidad. Si tenía una contraseña temporal, se invalida
+        // (para entrar con contraseña puede crear una con "¿Olvidó su contraseña?").
+        if (Boolean.TRUE.equals(u.getDebeCambiarPassword())) {
+            u.setPasswordHash(encoder.encode(java.util.UUID.randomUUID().toString()));
+            u.setDebeCambiarPassword(false);
+        }
+        registrar(u.getId(), email, BitacoraAcceso.LOGIN_GOOGLE, http);
         JwtService.Token token = jwt.generate(u);
         return new LoginResponse(token.value(), token.expiresAt(), UsuarioResponse.of(u));
     }

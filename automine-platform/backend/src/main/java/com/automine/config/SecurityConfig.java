@@ -41,9 +41,9 @@ public class SecurityConfig {
                 .headers(h -> h.frameOptions(f -> f.sameOrigin()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/AutomineApi/Login", "/AutomineApi/ForgotPassword",
-                                "/AutomineApi/ResetPassword").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/AutomineApi/Health",
+                        .requestMatchers(HttpMethod.POST, "/AutomineApi/Login", "/AutomineApi/LoginGoogle",
+                                "/AutomineApi/ForgotPassword", "/AutomineApi/ResetPassword").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/AutomineApi/Health", "/AutomineApi/PublicConfig",
                                 "/AutomineApi/Certificate/Validate/**").permitAll()
                         .requestMatchers("/AutomineApi/v3/api-docs/**", "/AutomineApi/swagger-ui/**",
                                 "/AutomineApi/swagger-ui.html", "/actuator/health/**").permitAll()

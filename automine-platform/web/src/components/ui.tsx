@@ -160,7 +160,7 @@ const TONES: Record<string, string> = {
   INACTIVO: 'danger', ANULADA: 'danger', ANULADO: 'danger', FUERA_SERVICIO: 'danger', CANCELADA: 'danger',
   GRAVE: 'danger', MORTAL: 'danger', CRITICO: 'danger', ALTA: 'danger', ACCIDENTE: 'danger', TERMINADO: 'danger',
   PENDIENTE: 'warn', ABIERTO: 'warn', REGISTRADA: 'warn', MANTENIMIENTO: 'warn', MODERADO: 'warn', ALTO: 'warn',
-  MEDIO: 'warn', MEDIA: 'warn', LOGIN_FALLIDO: 'danger', LOGIN_BLOQUEADO: 'danger', LOGIN_OK: 'ok',
+  MEDIO: 'warn', MEDIA: 'warn', LOGIN_FALLIDO: 'danger', LOGIN_BLOQUEADO: 'danger', LOGIN_OK: 'ok', LOGIN_GOOGLE: 'ok',
 };
 
 export function Badge({ value, tone }: { value?: string | null; tone?: string }) {

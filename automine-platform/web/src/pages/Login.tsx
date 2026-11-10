@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-do
 import { api } from '../api';
 import { useAuth } from '../auth';
 import Brand from '../components/Brand';
+import GoogleButton from '../components/GoogleButton';
 import { ErrorBox, Field } from '../components/ui';
 
 function AuthLayout({ children }: { children: ReactNode }) {
@@ -34,7 +35,7 @@ function AuthLayout({ children }: { children: ReactNode }) {
 }
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, loginGoogle } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [email, setEmail] = useState('');
@@ -83,6 +84,21 @@ export default function Login() {
           {!busy && <ArrowRight aria-hidden />}
         </button>
       </form>
+      <GoogleButton
+        onCredential={async (credential) => {
+          setBusy(true);
+          setError(null);
+          try {
+            await loginGoogle(credential);
+            const from = (location.state as { from?: string } | null)?.from;
+            navigate(from && from !== '/login' ? from : '/', { replace: true });
+          } catch (err) {
+            setError((err as Error).message);
+          } finally {
+            setBusy(false);
+          }
+        }}
+      />
       <div className="alert info mt" style={{ alignItems: 'center' }}>
         <FileBadge size={18} aria-hidden style={{ flexShrink: 0 }} />
         <span>
