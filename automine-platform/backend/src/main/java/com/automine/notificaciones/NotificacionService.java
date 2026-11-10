@@ -77,8 +77,7 @@ public class NotificacionService {
         mail.enviar(email, Correo.de("Nueva contraseña temporal de AUTOMINE", "Su contraseña fue restablecida",
                 "Ingresar a AUTOMINE", props.publicUrl() + "/login",
                 "Hola, " + primerNombre(nombre) + ". El administrador le asignó una contraseña temporal.",
-                "Usuario: " + email + "
-Contraseña temporal: " + passwordTemporal,
+                "Usuario: " + email + "\nContraseña temporal: " + passwordTemporal,
                 "Al ingresar el sistema le pedirá crear una contraseña personal."));
     }
 
