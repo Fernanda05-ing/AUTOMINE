@@ -1,8 +1,10 @@
 # Despliegue local de AUTOMINE: compila la web dentro de la API y la deja corriendo en
 # http://localhost:8081 (y en la red local para probar desde el celular).
-#   powershell -ExecutionPolicy Bypass -File scripts\desplegar-local.ps1 [-SinCompilar]
-# Las claves se escriben en la consola: no se muestran ni se guardan en ningun archivo.
-param([switch]$SinCompilar)
+#   powershell -ExecutionPolicy Bypass -File scripts\desplegar-local.ps1 [-SinCompilar] [-OlvidarCorreo]
+# Las claves se escriben en la consola y no se muestran. Los correos salen siempre de
+# autominesas@gmail.com: su contrasena de aplicacion se guarda cifrada (DPAPI) en
+# %LOCALAPPDATA%\AUTOMINE, nunca en el proyecto. -OlvidarCorreo la borra para escribir otra.
+param([switch]$SinCompilar, [switch]$OlvidarCorreo)
 
 $ErrorActionPreference = "Stop"
 $raiz = Split-Path -Parent $PSScriptRoot
@@ -29,9 +31,29 @@ for ($intento = 1; $intento -le 3; $intento++) {
     Write-Host "MySQL rechazo la contrasena (intento $intento de 3). Revise que este bien escrita." -ForegroundColor Red
     if ($intento -eq 3) { Write-Host "No se pudo conectar a MySQL. Ejecute el script de nuevo." -ForegroundColor Red; exit 1 }
 }
-$env:MAIL_USERNAME = Read-Host "Cuenta de Gmail para enviar correos (Enter = sin correo)"
-if ($env:MAIL_USERNAME) {
-    $env:MAIL_PASSWORD = (Leer-Secreto "Contrasena de aplicacion de Gmail (16 letras)").Replace(" ", "")
+# Correo: siempre sale de la cuenta de la empresa. La contrasena de aplicacion se pide una sola vez
+# y se guarda cifrada con Windows (DPAPI) en el perfil del usuario, fuera del proyecto.
+$cuentaCorreo = "autominesas@gmail.com"
+$dirSecretos = Join-Path $env:LOCALAPPDATA "AUTOMINE"
+$archivoClave = Join-Path $dirSecretos "gmail-app-password.dpapi"
+if ($OlvidarCorreo -and (Test-Path $archivoClave)) { Remove-Item $archivoClave -Force }
+$env:MAIL_USERNAME = $cuentaCorreo
+$env:MAIL_FROM = $cuentaCorreo
+if (Test-Path $archivoClave) {
+    $seguro = Get-Content $archivoClave | ConvertTo-SecureString
+    $env:MAIL_PASSWORD = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($seguro))
+    Write-Host "Correo: se usara $cuentaCorreo (contrasena guardada en este equipo)." -ForegroundColor Green
+} else {
+    $clave = (Leer-Secreto "Contrasena de aplicacion de Gmail de $cuentaCorreo (16 letras, Enter = sin correo)").Replace(" ", "")
+    if ($clave) {
+        $env:MAIL_PASSWORD = $clave
+        New-Item -ItemType Directory -Force $dirSecretos | Out-Null
+        ConvertTo-SecureString $clave -AsPlainText -Force | ConvertFrom-SecureString | Set-Content $archivoClave
+        Write-Host "Contrasena guardada cifrada para este usuario de Windows. No se volvera a pedir." -ForegroundColor Green
+    } else {
+        Remove-Item Env:MAIL_USERNAME, Env:MAIL_FROM -ErrorAction SilentlyContinue
+        Write-Host "Sin correo en esta ejecucion." -ForegroundColor Yellow
+    }
 }
 $env:GOOGLE_CLIENT_ID = Read-Host "ID de cliente de Google para iniciar sesion con Google (Enter = sin Google)"
 
