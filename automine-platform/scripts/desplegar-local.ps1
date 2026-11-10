@@ -55,7 +55,20 @@ if (Test-Path $archivoClave) {
         Write-Host "Sin correo en esta ejecucion." -ForegroundColor Yellow
     }
 }
-$env:GOOGLE_CLIENT_ID = Read-Host "ID de cliente de Google para iniciar sesion con Google (Enter = sin Google)"
+# ID de cliente de Google (no es secreto): se pide una vez y se recuerda en este equipo.
+$archivoGoogle = Join-Path $dirSecretos "google-client-id.txt"
+if ($OlvidarCorreo -and (Test-Path $archivoGoogle)) { Remove-Item $archivoGoogle -Force }
+if (Test-Path $archivoGoogle) {
+    $env:GOOGLE_CLIENT_ID = (Get-Content $archivoGoogle -Raw).Trim()
+    Write-Host "Inicio de sesion con Google: activo." -ForegroundColor Green
+} else {
+    $env:GOOGLE_CLIENT_ID = (Read-Host "ID de cliente de Google (termina en .apps.googleusercontent.com; Enter = sin Google)").Trim()
+    if ($env:GOOGLE_CLIENT_ID) {
+        New-Item -ItemType Directory -Force $dirSecretos | Out-Null
+        Set-Content $archivoGoogle $env:GOOGLE_CLIENT_ID
+        Write-Host "ID de Google guardado. El boton aparecera siempre." -ForegroundColor Green
+    }
+}
 
 # Direccion en la red local (para el celular)
 $ipLocal = (Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
